@@ -1,0 +1,11 @@
+{
+  "name": "ls3d",
+  "version": "0.2.0",
+  "description": "Production version of site",
+  "main": "ls3d.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "m mcwilliams",
+  "license": "MIT"
+}
