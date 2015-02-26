@@ -6,12 +6,13 @@ var fs = require('fs'),
 	bodyParser = require('body-parser'),
 	cookieParser = require('cookie-parser'),
 	expressSession = require('express-session'),
-	uuid = require('node-uuid'),
     moment = require('moment'),
     path = require('path');
 
 var hipcad = require('./lib/core.js');
 hipcad.users = require('./lib/users.js');
+hipcad.objects = require('./lib/objects.js');
+hipcad.tmpl = require('./lib/templates.js');
 hipcad.mail = require('./lib/mail.js');
 /*
 db.wipe('pw', function (obj) {
@@ -38,16 +39,15 @@ controller.fail = function (res, msg, status, json) {
 		page = {success: false, err : msg};
 		return res.json(status, page);
 	} else {
-		page = msg;
+		page = hipcad.page(hipcad.tmpl.err, {message: msg});
 		return res.send(status, page);
 	}
 };
 controller.home = function (req, res) {
-	console.log('home hit');
 	hipcad.tag(req, res, function (req, res, tag) {
-		hipcad.log('User ' + tag + ' came to front page');
+		//hipcad.log('User ' + tag + ' came to front page');
 		hipcad.log(tag + ',Front page', 'users');
-		res.send('home');
+		res.send(200, hipcad.page(hipcad.tmpl.home, {src: "Welcome"}));
 	});
 };
 controller.user = function (req, res) {
@@ -62,21 +62,22 @@ controller.user = function (req, res) {
 	hipcad.tag(req, res, function (req, res, tag) {
 		hipcad.users.exists(user, function (uexists) {
 			if (uexists) {
-				//get their objects
-				hipcad.log('User ' + tag + ' requested page for /' + user);
-				hipcad.log(tag + ',/' + user, 'users');
-				if (json) {
-					page = {success: true, user : user};
-					return res.json(200, page);
-				} else {
-					page = user; //template
-				}
+				hipcad.objects.index(user, function (data) {
+					if (json) {
+						page = {success: true, user : user, objects: data};
+						hipcad.log(tag + ',200,/' + user + ',json', 'users');
+						return res.json(200, page);
+					} else {
+						hipcad.log(tag + ',200,/' + user, 'users');
+						page = hipcad.page(hipcad.tmpl.user, {user:user, objects:data});
+					}
+					return res.send(200, page);
+				});
 			} else {
-				hipcad.log('User ' + tag + ' requested non-existant page for /' + user);
-				hipcad.log(tag + ',404  @ /' + user, 'users');
+				hipcad.log(tag + ',404,/' + user, 'users');
 				controller.fail(res, 'Page not found.', 404, json);
 			}
-			return res.send(page);
+			
 		});
 	});
 };
@@ -95,30 +96,51 @@ controller.object = function (req, res) {
 			if (uexists) {
 				hipcad.objects.exists(user, object, function (oexists) {
 					if (oexists) {
-						hipcad.log('User ' + tag + ' requested page for /' + user + '/' + object);
-						hipcad.log(tag + ',/' + user + '/' + object, 'users');
-						var obj = hipcad.objects.get(user, object);
-						if (json) {
-							res.json(200, {success: true, object: obj});
-						} else {
-							res.send(200, obj.src);
-						}
+						//hipcad.log('User ' + tag + ' requested page for /' + user + '/' + object);
+						hipcad.objects.get(user, object, function (obj) {
+							if (json) {
+								hipcad.log(tag + ',200,/' + user + '/' + object + ',json', 'users');
+								delete obj.id;
+								res.json(200, {success: true, object: obj});
+							} else {
+								hipcad.log(tag + ',200,/' + user + '/' + object, 'users');
+								res.send(200, hipcad.page(hipcad.tmpl.home, {src: obj.src}));
+							}
+						});
 					} else {
-						hipcad.log('User ' + tag + ' requested non-existant page for /' + user + '/' + object);
-						hipcad.log(tag + ',404 @ /' + user + '/' + object, 'users');
+						//hipcad.log('User ' + tag + ' requested non-existant page for /' + user + '/' + object);
+						hipcad.log(tag + ',404,/' + user + '/' + object, 'users');
 						controller.fail(res, 'Page not found.', 404, json);
 					}
 				});
 			} else {
-				hipcad.log('User ' + tag + ' requested non-existant page for /' + user + '/' + object);
-				hipcad.log(tag + ',404 @ /' + user + '/' + object, 'users');
+				//hipcad.log('User ' + tag + ' requested non-existant page for /' + user + '/' + object);
+				hipcad.log(tag + ',404,/' + user + '/' + object, 'users');
 				controller.fail(res, 'Page not found.', 404, json);
+			}
+		});
+	});
+};
+controller.login = function (req, res) {
+	var username, pwstring;
+	hipcad.tag(req, res, function (req, res, tag) {
+		username = req.body.user;
+		pwstring = req.body.pwstring;
+		hipcad.users.login(username, pwstring, function (success) {
+			if (success) {
+				hipcad.log(tag + ',200,Logged in,' + username, 'users');
+				//give token
+				res.json(200, {success: success});
+			} else {
+				hipcad.log(tag + ',401.1,Failed login,' + username);
+				controller.fail(res, 'User login failed', 401.1, true);
 			}
 		});
 	});
 };
 
 //app.use(express.static(path.join(__dirname, 'public')));
+//server.use('/media', express.static(__dirname + '/static'));
 app.use(cookieParser("Some fucking cookie secret"));
 app.use(expressSession({ 
 	secret: "Some fucking secret that is long",
@@ -128,11 +150,15 @@ app.use(expressSession({
 app.use(bodyParser.json({limit : '50mb'}));
 app.use(bodyParser.urlencoded({limit : '50mb', extended: false}));
 
+app.use('/js',express.static(path.join(__dirname, 'static/js')));
+app.use('/css',express.static(path.join(__dirname, 'static/css')));
+app.use(app.router);
+
 app.get('/', controller.home);
 app.get('/:user', controller.user);
 app.get('/:user/:object', controller.object);
 
-app.post('/login');
+app.post('/login', controller.login);
 app.post('/save/:user/:object');
 app.post('/delete/:user/:object');
 
@@ -140,5 +166,7 @@ hipcad.init();
 
 setTimeout(function () {
 	hipcad.users.test();
-	hipcad.mail.send('matt', 'mmcwilliams@aspectart.org', 'hey', 'this a message', '');
+	hipcad.objects.tests();
+	hipcad.tmpl.tests();
+	//hipcad.mail.send('matt', 'mmcwilliams@aspectart.org', 'hey', 'this a message', '', function() {});
 }, 2000);

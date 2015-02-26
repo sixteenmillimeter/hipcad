@@ -1,0 +1,138 @@
+<html>
+<head>
+	 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Liquid Sculpter 3D</title>
+      <meta name="description" content="Liquid Sculpter 3D is an OpenSCAD editor and viewer for thin clients. Access the powerful Constructive Solid Geometry library from any modern browser. LS3D is built with CodeMirror, openjscad.js and OpenSCAD running on an Digital Ocean Droplet. " />
+    <meta name="keywords" content="3D, 3D printing, STL, CNC, CSG, Engineering, App" />
+    <meta name="author" content="Matthew McWilliams" />
+    <meta name="robots" content="index, nofollow" />
+		<link href="/static/css/codemirror.css" rel="stylesheet" type="text/css" />
+		<link href="/static/css/monokai.css" rel="stylesheet" type="text/css" />
+		<link href="/static/css/neat-openscad.css" rel="stylesheet" type="text/css" />
+
+		<!-- -->
+		<link rel="stylesheet" href="/static/css/openjscad.css" type="text/css">
+		<link href="/static/css/readycad.css" rel="stylesheet" type="text/css">
+		<!-- -->
+		<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+
+		<!-- -->
+		<script src="/static/js/lightgl.js"></script>
+		<script src="/static/js/csg.js"></script>
+		<script src="/static/js/openjscad.js"></script>
+		<script src="/static/js/openscad.js"></script>
+		<script src="/static/js/underscore.js"></script>
+		<script src="/static/js/openscad-openjscad-translator.js"></script>
+
+		<!-- -->
+		<script type="text/javascript" src="/static/js/codemirror.min.js"></script>
+		<script type="text/javascript" src="/static/js/lua.js"></script>
+		<script type="text/javascript" src="/static/js/clike.js"></script>
+		<script type="text/javascript" src="/static/js/readycad.js"></script>
+		<script>
+			var version = '0.017 (2014/01/07)';
+			var me = document.location.toString().match(/^file:/)?'web-offline':'web-online'; // me: {cli, web-offline, web-online}
+			var browser = 'unknown';
+			if(navigator.userAgent.match(/(opera|chrome|safari|firefox|msie)/i))
+			   browser = RegExp.$1.toLowerCase();
+			
+			$(document).ready(function() {
+			   $("#viewer").height($(window).height());
+			
+			   $(window).resize(function() {                // adjust the relevant divs
+				  $("#viewer").width($(window).width());
+				  $("#viewer").height($(window).height());
+			   });
+			});   
+		</script>
+</head>
+<body>
+<script id="conversionWorker" type="javascript/worker">
+
+			self.onmessage = function(e) {      // Worker to import STL/OBJ as it can take quite some while for 1MB+ large STLs
+			   var data = e.data; // JSON.parse(e.data);
+			   me = data.me;                    // required for openscad.js parse*() 
+			   version = data.version;          //     ''               ''
+
+			   if(data.url) {     // RANT: why do something simple, when it can be done complicate: Workers & importScripts() (guys!!)
+			      var url = data.url;
+			      url = url.replace(/#.*$/,'');    // -- just to be sure ...
+			      url = url.replace(/\?.*$/,'');
+			      var index = url.indexOf('index.html');
+			      if(index!=-1) {
+			         url = url.substring(0,index);
+			      }
+			      importScripts(url+'static/js/csg.js',url+'static/js/openjscad.js',url+'static/js/openscad.js');
+			      var src, type;
+			      data.filename.match(/\.(stl|obj|amf|gcode)$/i);
+			      type = RegExp.$1;
+			      if(type=='obj') {
+			         src = parseOBJ(data.source,data.filename);
+			      } else if(type=='amf') {
+			         src = parseAMF(data.source,data.filename);
+			      } else if(type=='gcode') {
+			         src = parseGCode(data.source,data.filename);
+			      } else {
+			         src = parseSTL(data.source,data.filename);
+			      }
+			      self.postMessage({ source: src, filename: data.filename, url: data.remote });
+			   }
+			};
+		</script>
+	<div class="window">
+		<div class="toolbar">Editor</div>
+		<div id="editor" class="content"></div>
+	</div>
+
+	<div class="window" style="margin-left: 653px; margin-top: 27px;">
+		<div class="toolbar">Viewer</div>
+		<div class="content" id="viewer" oncontextmenu="return false;" ></div>
+	</div>
+
+	<div class="window" style="margin-left: 28px; margin-top: 525px; height: 200px;">
+		<div class="toolbar">Console</div>
+		<textarea class="content" id="console" oncontextmenu="return false;" style="height: 180px" ></textarea>
+	</div>
+
+	<div class="window" style="margin-left: 1264px; margin-top: 27px; width: 450px;">
+		<div class="toolbar">Reference</div>
+		<div class="cover"></div>
+		<iframe class="content" id="reference" oncontextmenu="return false;" src="http://www.openscad.org/cheatsheet/"></iframe>
+	</div>
+
+	<div style="width: 100px; height: 100px; position: fixed; bottom: 0; right: 0;">
+		<img id="preview">
+	</div>
+
+	<div class="window" style="margin-left: 653px; margin-top: 525px; width: 468px; min-height: 80px; height: 80px;">
+		<div class="toolbar">:-)</div>
+		<div class="content">
+        <script type="text/javascript"><!--
+            google_ad_client = "ca-pub-5370110211187667";
+            /* ls3d top banner */
+            google_ad_slot = "8396762956";
+            google_ad_width = 468;
+            google_ad_height = 60;
+            //-->
+            </script>
+            <!--<script type="text/javascript"src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+            </script>-->
+        </div>
+     </div>
+<div id="parametersdiv"></div>
+<div id="tail">
+<div id="statusdiv"></div>
+<div id="errordiv"></div>
+<div id="filedropzone">
+  <div id="filedropzone_filled">
+    <span id="currentfile">...</span>
+    <div id="filebuttons">
+      <button id="getstlbutton" style="display:none" onclick="getStl();">Get STL</button>
+      <button onclick="superviseAllFiles({forceReload:true});">Reload</button>
+	   <label for="autoreload">Auto Reload</label><input type="checkbox" name="autoreload" value="" id="autoreload" onclick="toggleAutoReload();">
+    </div>
+  </div>
+</div>
+</div>
+</body>
+</html>
