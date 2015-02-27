@@ -10,18 +10,11 @@ var fs = require('fs'),
     path = require('path');
 
 var hipcad = require('./lib/core.js');
+hipcad.cfg = require('/var/c')
 hipcad.users = require('./lib/users.js');
 hipcad.objects = require('./lib/objects.js');
 hipcad.tmpl = require('./lib/templates.js');
 hipcad.mail = require('./lib/mail.js');
-/*
-db.wipe('pw', function (obj) {
-	console.log(obj);
-	users.pw = obj;
-});
-*/
-
-//hipcad.objects = require('./lib/objects.js')(hipcad.db);
 
 hipcad.init = function () {
 	if (hipcad.cmd('-d', '--dev')) {
@@ -139,8 +132,6 @@ controller.login = function (req, res) {
 	});
 };
 
-//app.use(express.static(path.join(__dirname, 'public')));
-//server.use('/media', express.static(__dirname + '/static'));
 app.use(cookieParser("Some fucking cookie secret"));
 app.use(expressSession({ 
 	secret: "Some fucking secret that is long",
