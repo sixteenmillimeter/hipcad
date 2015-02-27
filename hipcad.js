@@ -25,7 +25,7 @@ hipcad.init = function () {
 	    hipcad.dev = false;
 	}
 	app.listen(hipcad.cfg.port);
-	hipcad.log('Started server on ' + hipcad.cfg.port);
+	hipcad.log('Started server on http://127.0.0.1:' + hipcad.cfg.port);
 };
 
 var controller = {};
@@ -141,6 +141,10 @@ app.use(expressSession({
 }));
 app.use(bodyParser.json({limit : '5mb'}));
 app.use(bodyParser.urlencoded({limit : '5mb', extended: false}));
+
+app.get('/robots.txt', function(req, res) {
+	res.status(200).send('User-agent: *\nDisallow: /\nUser-agent: Googlebot\nAllow: /\nUser-agent: Slurp\nAllow: /\nUser-agent: bingbot\nAllow: /');
+});
 
 app.get('/', controller.home);
 app.get('/:user', controller.user);
