@@ -40,7 +40,6 @@ controller.fail = function (res, msg, status, json) {
 };
 controller.home = function (req, res) {
 	hipcad.tag(req, res, function (req, res, tag) {
-		console.log(req);
 		hipcad.log(tag + ',Front page', 'users');
 		res.status(200).send(hipcad.page(hipcad.tmpl.home, {src: "Welcome"}));
 	});
