@@ -10,7 +10,7 @@ var fs = require('fs'),
     path = require('path');
 
 var hipcad = require('./lib/core.js');
-hipcad.cfg = require('/var/c')
+hipcad.cfg = require('./lib/cfg.js');
 hipcad.users = require('./lib/users.js');
 hipcad.objects = require('./lib/objects.js');
 hipcad.tmpl = require('./lib/templates.js');
@@ -23,7 +23,8 @@ hipcad.init = function () {
 	} else {
 	    hipcad.dev = false;
 	}
-	app.listen(6445);
+	app.listen(hipcad.cfg.port);
+	hipcad.log('Started server on ' + hipcad.cfg.port);
 };
 
 var controller = {};
