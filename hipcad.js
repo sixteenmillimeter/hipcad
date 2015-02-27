@@ -133,9 +133,9 @@ controller.login = function (req, res) {
 	});
 };
 
-app.use(cookieParser("Some fucking cookie secret"));
+app.use(cookieParser(hipcad.cfg.cookie_secret));
 app.use(expressSession({ 
-	secret: "Some fucking secret that is long",
+	secret: hipcad.cfg.session_secret,
 	saveUninitialized: true,
 	resave: true
 }));
