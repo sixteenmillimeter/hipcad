@@ -143,9 +143,8 @@ app.use(bodyParser.json({limit : '5mb'}));
 app.use(bodyParser.urlencoded({limit : '5mb', extended: false}));
 
 app.get('/robots.txt', function(req, res) {
-	res.setHeader('Content-type', 'text/plain');
-	res.charset = 'UTF-8';
-	res.write('User-agent: *\nDisallow: /\nUser-agent: Googlebot\nAllow: /\nUser-agent: Slurp\nAllow: /\nUser-agent: bingbot\nAllow: /');
+	res.set('Content-Type', 'text/plain');
+	res.send('User-agent: *\nDisallow: /\nUser-agent: Googlebot\nAllow: /\nUser-agent: Slurp\nAllow: /\nUser-agent: bingbot\nAllow: /');
 });
 
 app.get('/', controller.home);
