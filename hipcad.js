@@ -40,7 +40,7 @@ controller.fail = function (res, msg, status, json) {
 };
 controller.home = function (req, res) {
 	hipcad.tag(req, res, function (req, res, tag) {
-		hipcad.log(tag + ',Front page', 'users');
+		hipcad.log(tag + ',200,Front page', 'controller');
 		res.status(200).send(hipcad.page(hipcad.tmpl.home, {src: "Welcome"}));
 	});
 };
@@ -59,16 +59,16 @@ controller.user = function (req, res) {
 				hipcad.objects.index(user, function (data) {
 					if (json) {
 						page = {success: true, user : user, objects: data};
-						hipcad.log(tag + ',200,/' + user + ',json', 'users');
+						hipcad.log(tag + ',200,/' + user + ',json', 'controller');
 						return res.status(200).json(page);
 					} else {
-						hipcad.log(tag + ',200,/' + user, 'users');
+						hipcad.log(tag + ',200,/' + user, 'controller');
 						page = hipcad.page(hipcad.tmpl.user, {user:user, objects:data});
 					}
 					return res.status(200).send(page);
 				});
 			} else {
-				hipcad.log(tag + ',404,/' + user, 'users');
+				hipcad.log(tag + ',404,/' + user, 'controller');
 				controller.fail(res, 'Page not found.', 404, json);
 			}
 			
@@ -93,23 +93,23 @@ controller.object = function (req, res) {
 						//hipcad.log('User ' + tag + ' requested page for /' + user + '/' + object);
 						hipcad.objects.get(user, object, function (obj) {
 							if (json) {
-								hipcad.log(tag + ',200,/' + user + '/' + object + ',json', 'users');
+								hipcad.log(tag + ',200,/' + user + '/' + object + ',json', 'controller');
 								delete obj.id;
 								res.status(200).json({success: true, object: obj});
 							} else {
-								hipcad.log(tag + ',200,/' + user + '/' + object, 'users');
+								hipcad.log(tag + ',200,/' + user + '/' + object, 'controller');
 								res.status(200).send(hipcad.page(hipcad.tmpl.home, {src: obj.src}));
 							}
 						});
 					} else {
 						//hipcad.log('User ' + tag + ' requested non-existant page for /' + user + '/' + object);
-						hipcad.log(tag + ',404,/' + user + '/' + object, 'users');
+						hipcad.log(tag + ',404,/' + user + '/' + object, 'controller');
 						controller.fail(res, 'Page not found.', 404, json);
 					}
 				});
 			} else {
 				//hipcad.log('User ' + tag + ' requested non-existant page for /' + user + '/' + object);
-				hipcad.log(tag + ',404,/' + user + '/' + object, 'users');
+				hipcad.log(tag + ',404,/' + user + '/' + object, 'controller');
 				controller.fail(res, 'Page not found.', 404, json);
 			}
 		});
@@ -122,7 +122,7 @@ controller.login = function (req, res) {
 		pwstring = req.body.pwstring;
 		hipcad.users.login(username, pwstring, function (success) {
 			if (success) {
-				hipcad.log(tag + ',200,Logged in,' + username, 'users');
+				hipcad.log(tag + ',200,Logged in,' + username, 'controller');
 				//give token
 				res.status(200).json({success: success});
 			} else {
@@ -145,10 +145,17 @@ app.use(bodyParser.urlencoded({limit : '5mb', extended: false}));
 app.get('/', controller.home);
 app.get('/:user', controller.user);
 app.get('/:user/:object', controller.object);
+//app.get('/:user/:object/:rev', controller.revision);
 
-app.post('/login', controller.login);
-app.post('/save/:user/:object');
-app.post('/delete/:user/:object');
+//app.get('/static/'); -> being reserved by nginx
+app.post('/user/login', controller.login);
+app.post('/user/logout');
+app.get('/user/logout');
+app.post('/user/create');
+
+app.post('/object/create/:user/:object');
+app.post('/object/update/:user/:object');
+app.post('/object/delete/:user/:object');
 
 hipcad.init();
 
