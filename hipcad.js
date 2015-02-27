@@ -31,17 +31,17 @@ var controller = {};
 controller.fail = function (res, msg, status, json) {
 	if (json) {
 		page = {success: false, err : msg};
-		return res.json(status, page);
+		return res.status(status).json(page);
 	} else {
 		page = hipcad.page(hipcad.tmpl.err, {message: msg});
-		return res.send(status, page);
+		return res.status(status).send(page);
 	}
 };
 controller.home = function (req, res) {
 	hipcad.tag(req, res, function (req, res, tag) {
 		//hipcad.log('User ' + tag + ' came to front page');
 		hipcad.log(tag + ',Front page', 'users');
-		res.send(200, hipcad.page(hipcad.tmpl.home, {src: "Welcome"}));
+		res.status(200).send(hipcad.page(hipcad.tmpl.home, {src: "Welcome"}));
 	});
 };
 controller.user = function (req, res) {
@@ -60,12 +60,12 @@ controller.user = function (req, res) {
 					if (json) {
 						page = {success: true, user : user, objects: data};
 						hipcad.log(tag + ',200,/' + user + ',json', 'users');
-						return res.json(200, page);
+						return res.status(200).json(page);
 					} else {
 						hipcad.log(tag + ',200,/' + user, 'users');
 						page = hipcad.page(hipcad.tmpl.user, {user:user, objects:data});
 					}
-					return res.send(200, page);
+					return res.status(200).send(page);
 				});
 			} else {
 				hipcad.log(tag + ',404,/' + user, 'users');
@@ -95,10 +95,10 @@ controller.object = function (req, res) {
 							if (json) {
 								hipcad.log(tag + ',200,/' + user + '/' + object + ',json', 'users');
 								delete obj.id;
-								res.json(200, {success: true, object: obj});
+								res.status(200).json({success: true, object: obj});
 							} else {
 								hipcad.log(tag + ',200,/' + user + '/' + object, 'users');
-								res.send(200, hipcad.page(hipcad.tmpl.home, {src: obj.src}));
+								res.status(200).send(hipcad.page(hipcad.tmpl.home, {src: obj.src}));
 							}
 						});
 					} else {
@@ -124,7 +124,7 @@ controller.login = function (req, res) {
 			if (success) {
 				hipcad.log(tag + ',200,Logged in,' + username, 'users');
 				//give token
-				res.json(200, {success: success});
+				res.status(200).json({success: success});
 			} else {
 				hipcad.log(tag + ',401.1,Failed login,' + username);
 				controller.fail(res, 'User login failed', 401.1, true);
