@@ -17,6 +17,7 @@ hipcad.tmpl = require('./lib/templates.js');
 hipcad.mail = require('./lib/mail.js');
 
 hipcad.init = function () {
+	hipcad.logPath = hipcad.cfg.logs;
 	if (hipcad.cmd('-d', '--dev')) {
 	    hipcad.log('Running in development mode');
 	    hipcad.dev = true;
@@ -39,7 +40,7 @@ controller.fail = function (res, msg, status, json) {
 };
 controller.home = function (req, res) {
 	hipcad.tag(req, res, function (req, res, tag) {
-		//hipcad.log('User ' + tag + ' came to front page');
+		console.log(req);
 		hipcad.log(tag + ',Front page', 'users');
 		res.status(200).send(hipcad.page(hipcad.tmpl.home, {src: "Welcome"}));
 	});
