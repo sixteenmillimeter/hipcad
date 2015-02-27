@@ -168,5 +168,4 @@ setTimeout(function () {
 	hipcad.users.test();
 	hipcad.objects.tests();
 	hipcad.tmpl.tests();
-	//hipcad.mail.send('matt', 'mmcwilliams@aspectart.org', 'hey', 'this a message', '', function() {});
 }, 2000);

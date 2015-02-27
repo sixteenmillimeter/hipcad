@@ -52,4 +52,6 @@ var includes = function (a) {
 		console.dir(inc);
 	}
 	
+	$.ajax(obj);
+	
 };
