@@ -1,8 +1,8 @@
 {
-  "name": "ls3d",
+  "name": "hipcad",
   "version": "0.2.0",
   "description": "Production version of site",
-  "main": "ls3d.js",
+  "main": "hipcad.js",
   "scripts": {
     "test": "test"
   },
