@@ -17,15 +17,15 @@ hipcad.tmpl = require('./lib/templates.js');
 hipcad.mail = require('./lib/mail.js');
 
 hipcad.init = function () {
-	hipcad.logPath = hipcad.cfg.logs;
+	hipcad.logger.logPath = hipcad.cfg.logs;
 	if (hipcad.cmd('-d', '--dev')) {
-	    hipcad.log('Running in development mode');
+	    hipcad.logger.log('Running in development mode');
 	    hipcad.dev = true;
 	} else {
 	    hipcad.dev = false;
 	}
 	app.listen(hipcad.cfg.port);
-	hipcad.log('Started server on http://127.0.0.1:' + hipcad.cfg.port);
+	hipcad.logger.log('Started server on http://127.0.0.1:' + hipcad.cfg.port);
 };
 
 var controller = {};
@@ -40,7 +40,7 @@ controller.fail = function (res, msg, status, json) {
 };
 controller.home = function (req, res) {
 	hipcad.tag(req, res, function (req, res, tag) {
-		hipcad.log(tag + ',200,Front page', 'controller');
+		hipcad.logger.log(tag + ',200,Front page', 'controller');
 		res.status(200).send(hipcad.page(hipcad.tmpl.home, {src: "Welcome"}));
 	});
 };
@@ -59,16 +59,16 @@ controller.user = function (req, res) {
 				hipcad.objects.index(user, function (data) {
 					if (json) {
 						page = {success: true, user : user, objects: data};
-						hipcad.log(tag + ',200,/' + user + ',json', 'controller');
+						hipcad.logger.log(tag + ',200,/' + user + ',json', 'controller');
 						return res.status(200).json(page);
 					} else {
-						hipcad.log(tag + ',200,/' + user, 'controller');
+						hipcad.logger.log(tag + ',200,/' + user, 'controller');
 						page = hipcad.page(hipcad.tmpl.user, {user:user, objects:data});
 					}
 					return res.status(200).send(page);
 				});
 			} else {
-				hipcad.log(tag + ',404,/' + user, 'controller');
+				hipcad.logger.log(tag + ',404,/' + user, 'controller');
 				controller.fail(res, 'Page not found.', 404, json);
 			}
 			
@@ -90,26 +90,26 @@ controller.object = function (req, res) {
 			if (uexists) {
 				hipcad.objects.exists(user, object, function (oexists) {
 					if (oexists) {
-						//hipcad.log('User ' + tag + ' requested page for /' + user + '/' + object);
+						//hipcad.logger.log('User ' + tag + ' requested page for /' + user + '/' + object);
 						hipcad.objects.get(user, object, function (obj) {
 							if (json) {
-								hipcad.log(tag + ',200,/' + user + '/' + object + ',json', 'controller');
+								hipcad.logger.log(tag + ',200,/' + user + '/' + object + ',json', 'controller');
 								delete obj.id;
 								res.status(200).json({success: true, object: obj});
 							} else {
-								hipcad.log(tag + ',200,/' + user + '/' + object, 'controller');
+								hipcad.logger.log(tag + ',200,/' + user + '/' + object, 'controller');
 								res.status(200).send(hipcad.page(hipcad.tmpl.home, {src: obj.src}));
 							}
 						});
 					} else {
-						//hipcad.log('User ' + tag + ' requested non-existant page for /' + user + '/' + object);
-						hipcad.log(tag + ',404,/' + user + '/' + object, 'controller');
+						//hipcad.logger.log('User ' + tag + ' requested non-existant page for /' + user + '/' + object);
+						hipcad.logger.log(tag + ',404,/' + user + '/' + object, 'controller');
 						controller.fail(res, 'Page not found.', 404, json);
 					}
 				});
 			} else {
-				//hipcad.log('User ' + tag + ' requested non-existant page for /' + user + '/' + object);
-				hipcad.log(tag + ',404,/' + user + '/' + object, 'controller');
+				//hipcad.logger.log('User ' + tag + ' requested non-existant page for /' + user + '/' + object);
+				hipcad.logger.log(tag + ',404,/' + user + '/' + object, 'controller');
 				controller.fail(res, 'Page not found.', 404, json);
 			}
 		});
@@ -122,11 +122,11 @@ controller.login = function (req, res) {
 		pwstring = req.body.pwstring;
 		hipcad.users.login(username, pwstring, function (success) {
 			if (success) {
-				hipcad.log(tag + ',200,Logged in,' + username, 'controller');
+				hipcad.logger.log(tag + ',200,Logged in,' + username, 'controller');
 				//give token
 				res.status(200).json({success: success});
 			} else {
-				hipcad.log(tag + ',401.1,Failed login,' + username);
+				hipcad.logger.log(tag + ',401.1,Failed login,' + username);
 				controller.fail(res, 'User login failed', 401.1, true);
 			}
 		});
