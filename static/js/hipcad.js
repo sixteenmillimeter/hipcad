@@ -1,7 +1,7 @@
 var onload = function () {
-	var view = document.getElementById('viewport'); 
+	var view = document.getElementById('viewport');
 	var txt = document.getElementById("code");
-	txt.height = window.innerHeight - 40;
+	txt.height = window.innerHeight;
 	//var data = localStorage.getItem("compact");
 	//if (compact.data !== null) {
 		//compact.txt.value = compact.data;
@@ -10,7 +10,7 @@ var onload = function () {
 		lineNumbers: true,
 		styleActiveLine: true,
 		matchBrackets: true,
-		theme: 'monokai',
+		//theme: 'monokai',
 		mode: 'lua'
 	});
 
@@ -43,7 +43,7 @@ var includes = function (a) {
 	var lines = a.split('\n'),
 		inc = [];
 	for (var i = 0; i < lines.length; i++) {
-		if (lines[i].indexOf('include') !== -1 
+		if (lines[i].indexOf('include') !== -1
 		&& lines[i].indexOf(';') !== -1) {
 			inc.push(lines[i].match(/<[^>]*>/g)[0].replace('<','').replace('>', ''));
 		}
@@ -51,7 +51,7 @@ var includes = function (a) {
 	if (inc.length !== 0) {
 		console.dir(inc);
 	}
-	
+
 	$.ajax(obj);
-	
+
 };
