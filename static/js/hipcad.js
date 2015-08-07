@@ -39,8 +39,8 @@ var onchange = function (cm, change) {
 				//}
 			//}
 		//}
-	});
 };
+
 var includes = function (a) {
 	var lines = a.split('\n'),
 		inc = [];
