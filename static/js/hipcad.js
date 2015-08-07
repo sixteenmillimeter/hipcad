@@ -26,6 +26,8 @@ var onchange = function (cm, change) {
 	var body = editor.getValue(),
 		line = editor.getLine(change.to.line),
 		char = change.to.ch;
+	console.log(line);
+	console.log(char);
 		/*
 		b = a.match(/\(/g),
 		c = a.match(/\)/g),
