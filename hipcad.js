@@ -24,6 +24,7 @@ hipcad.init = function () {
 	} else {
 	    hipcad.dev = false;
 	}
+	hipcad.homePage = fs.readFileSync('./views/info.txt', 'utf8');
 	app.listen(hipcad.cfg.port);
 	hipcad.logger.info('Started server on http://127.0.0.1:' + hipcad.cfg.port);
 };
@@ -41,15 +42,15 @@ controller.fail = function (res, msg, status, json) {
 controller.home = function (req, res) {
 	hipcad.tag(req, res, function (req, res, tag) {
 		hipcad.logger.info(tag + ',200,Front page', 'controller');
-		res.status(200).send(hipcad.page(hipcad.tmpl.home, {src: "Welcome"}));
+		res.status(200).send(hipcad.page(hipcad.tmpl.home, {src: hipcad.homePage}));
 	});
 };
 controller.user = function (req, res) {
 	var user = req.params['user'],
 		json = false,
 		page;
-	if (req.query 
-		&& req.query['json'] 
+	if (req.query
+		&& req.query['json']
 		&& req.query['json'] === 'true') {
 		json = true;
 	}
@@ -71,7 +72,7 @@ controller.user = function (req, res) {
 				hipcad.logger.info(tag + ',404,/' + user, 'controller');
 				controller.fail(res, 'Page not found.', 404, json);
 			}
-			
+
 		});
 	});
 };
@@ -80,8 +81,8 @@ controller.object = function (req, res) {
 		object = req.params['object'],
 		json = false,
 		page;
-	if (req.query 
-		&& req.query['json'] 
+	if (req.query
+		&& req.query['json']
 		&& req.query['json'] === 'true') {
 		json = true;
 	}
@@ -134,7 +135,7 @@ controller.login = function (req, res) {
 };
 
 app.use(cookieParser(hipcad.cfg.cookie_secret));
-app.use(expressSession({ 
+app.use(expressSession({
 	secret: hipcad.cfg.session_secret,
 	saveUninitialized: true,
 	resave: true
@@ -163,9 +164,3 @@ app.post('/object/update/:user/:object');
 app.post('/object/delete/:user/:object');
 
 hipcad.init();
-
-setTimeout(function () {
-	hipcad.users.test();
-	hipcad.objects.tests();
-	hipcad.tmpl.tests();
-}, 2000);
