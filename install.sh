@@ -17,5 +17,5 @@ mkdir /var/node
 cd /var/node
 git clone https://litter@bitbucket.org/litter/hipcad.git
 cd hipcad
-npm install -g forever
+npm install -g forever gulp
 npm install
