@@ -17,7 +17,7 @@ var onload = function () {
 	editor.setSize(undefined, txt.height);
 
 	editor.on('change', onchange);
-});
+};
 
 var onchange = function (cm, change) {
 	console.log(cm);
