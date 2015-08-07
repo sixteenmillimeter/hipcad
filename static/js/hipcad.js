@@ -62,7 +62,29 @@ var isEditing = function (line, char) {
 	return area;
 };
 
-var includes = function (a) {
+var include = {};
+include.store = {};
+include.exists = function (path) {
+	var slashes = path.match(new RegExp("/", "g")) || []).length;
+	if (slashes === 0) {
+
+	} else if (slashes === 1 || path.trim()[0] === '/') {
+
+	}
+};
+
+include.existsName = function (path) {
+	var cleanName = path.replace('/', '').trim(),
+		obj = {
+			url : '/' + cleanName + '?json=true',
+			success : function (res) {
+				console.dir(res);
+			}
+	};
+	$.ajax(obj);
+};
+
+include.find = function (a) {
 	var lines = a.split('\n'),
 		inc = [];
 	for (var i = 0; i < lines.length; i++) {
