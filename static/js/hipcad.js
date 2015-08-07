@@ -10,15 +10,18 @@ var onload = function () {
 		lineNumbers: true,
 		styleActiveLine: true,
 		matchBrackets: true,
-		//theme: 'monokai',
+		theme: 'monokai',
 		mode: 'lua'
 	});
 
 	editor.setSize(undefined, txt.height);
 
-	editor.on('change', function (cm, change) {
-		var a = editor.getValue(),
+	editor.on('change', onchange);
 
+var onchange = function (cm, change) {
+	console.log(cm);
+	console.log(change);
+	var a = editor.getValue(),
 		b = a.match(/\(/g),
 		c = a.match(/\)/g),
 		d = a.match(/\{/g),
@@ -38,7 +41,6 @@ var onload = function () {
 		//}
 	});
 };
-
 var includes = function (a) {
 	var lines = a.split('\n'),
 		inc = [];
