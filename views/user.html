@@ -1,6 +1,19 @@
-<table>
-	<h1>{{user}}</h1>
-	{{#each objects}}
-	<tr><td><a href="/{{path}}">{{path}}</a></td></tr>
-	{{/each}}
-</table>
+<!doctype html>
+<html>
+	<head>
+		<title>hipcad</title>
+		<meta charset="utf-8" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <link rel="icon" href="/static/images/favicon.ico" type="image/x-icon" />
+  </head>
+  <body>
+		<table>
+			<h1>{{user}}</h1>
+			{{#each objects}}
+			<tr><td><a href="/{{path}}">{{path}}</a></td></tr>
+			{{/each}}
+		</table>
+	</body>
+</html>

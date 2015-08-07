@@ -46,6 +46,9 @@ var onchange = function (cm, change) {
 				//}
 			//}
 		//}
+		if (isEditing(line, char) === 'include') {
+			include.exists('/matt');
+		}
 		console.log(isEditing(line, char));
 };
 
@@ -67,18 +70,24 @@ include.store = {};
 include.exists = function (path) {
 	var slashes = (path.match(new RegExp("/", "g")) || []).length;
 	if (slashes === 0) {
-
+		include.existsName(path);
 	} else if (slashes === 1 || path.trim()[0] === '/') {
+		include.existsName(path);
+	} else if ((slashes === 1 || path.trim()[0] !== '/') || slashes === 2) {
 
 	}
 };
 
-include.existsName = function (path) {
+include.existsName = function (path, cb) {
 	var cleanName = path.replace('/', '').trim(),
 		obj = {
 			url : '/' + cleanName + '?json=true',
 			success : function (res) {
 				console.dir(res);
+				if (cb) cb(res);
+			},
+			error : function (err) {
+				console.log(err);
 			}
 	};
 	$.ajax(obj);
