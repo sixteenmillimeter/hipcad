@@ -48,4 +48,12 @@ setTimeout(function () {
 			});
 		});
 	//});
+				users.login('matt', 'test12345', function (success) {
+				if (success) {
+					console.log('logged in!');
+				} else {
+					console.log('login failed');
+				}
+				
+			});
 }, 500);
