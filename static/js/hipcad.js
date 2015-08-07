@@ -25,20 +25,21 @@ var onchange = function (cm, change) {
 	console.log(change);
 	var body = editor.getValue(),
 		line = editor.getLine(change.to.line),
-		char = change.to.ch,
+		char = change.to.ch;
+		/*
 		b = a.match(/\(/g),
 		c = a.match(/\)/g),
 		d = a.match(/\{/g),
 		e = a.match(/\}/g),
 		f = a.match(/\[/g),
 		g = a.match(/\]/g),
-		h = a.match(/\;/g);
+		h = a.match(/\;/g);*/
 
 		//if (h !== null) {
 			//if ((b !== null && c !== null) && (b.length === c.length)) {
 				//if ((d === null && e === null) || (d.length === e.length)) {
 					//if ((f === null && g === null) || (f.length === g.length)) {
-						includes(body);
+						//includes(body);
 					//}
 				//}
 			//}
