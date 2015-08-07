@@ -65,7 +65,7 @@ var isEditing = function (line, char) {
 var include = {};
 include.store = {};
 include.exists = function (path) {
-	var slashes = path.match(new RegExp("/", "g")) || []).length;
+	var slashes = (path.match(new RegExp("/", "g")) || []).length;
 	if (slashes === 0) {
 
 	} else if (slashes === 1 || path.trim()[0] === '/') {
