@@ -53,9 +53,10 @@ var onchange = function (cm, change) {
 var isEditing = function (line, char) {
 	var area = null;
 	if (line.indexOf('include') !== -1) {
-		area = 'includes';
-		if (line.indexOf('<') < char || line.indexOf('>') < char) {
-			area = null;
+		if (line.indexOf('<') < char
+			&& (line.indexOf('>') === -1 || line.indexOf('>') > char)
+		) {
+			area = 'include';
 		}
 	}
 	return area;
