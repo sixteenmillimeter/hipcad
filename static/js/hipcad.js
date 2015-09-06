@@ -18,7 +18,7 @@ onload = function () {
 		styleActiveLine: true,
 		matchBrackets: true,
 		theme: 'monokai',
-		mode: 'lua'
+		mode: 'clike'
 	});
 
 	editor.setSize(undefined, txt.height);
