@@ -1,11 +1,17 @@
+/*global console, $, CodeMirror */
+
+'use strict';
+
 var editor,
-	onload = function () {
-	var view = document.getElementById('viewport');
-	var txt = document.getElementById("code");
+	onload;
+
+onload = function () {
+	var view = document.getElementById('viewport'),
+		txt = document.getElementById('code');
 	txt.height = window.innerHeight;
 	//var data = localStorage.getItem("compact");
-	//if (compact.data !== null) {
-		//compact.txt.value = compact.data;
+	//if (data !== null) {
+		//txt.value = compact.data;
 	//}
 	editor = CodeMirror.fromTextArea(txt, {
 		lineNumbers: true,
@@ -21,13 +27,13 @@ var editor,
 };
 
 var onchange = function (cm, change) {
-	console.log(cm);
-	console.log(change);
+	//console.log(cm);
+	//console.log(change);
 	var body = editor.getValue(),
 		line = editor.getLine(change.to.line),
-		char = change.to.ch;
+		cha = change.to.ch;
 	console.log(line);
-	console.log(char);
+	console.log(cha);
 		/*
 		b = a.match(/\(/g),
 		c = a.match(/\)/g),
@@ -46,7 +52,7 @@ var onchange = function (cm, change) {
 				//}
 			//}
 		//}
-		if (isEditing(line, char) === 'include') {
+		if (isEditing(line, cha) === 'include') {
 			include.exists('/matt');
 		}
 		console.log(isEditing(line, char));
@@ -68,7 +74,7 @@ var isEditing = function (line, char) {
 var include = {};
 include.store = {};
 include.exists = function (path) {
-	var slashes = (path.match(new RegExp("/", "g")) || []).length;
+	var slashes = (path.match(new RegExp('/', 'g')) || []).length;
 	if (slashes === 0) {
 		include.existsName(path);
 	} else if (slashes === 1 || path.trim()[0] === '/') {
@@ -82,6 +88,7 @@ include.existsName = function (path, cb) {
 	var cleanName = path.replace('/', '').trim(),
 		obj = {
 			url : '/' + cleanName + '?json=true',
+			type: 'GET',
 			success : function (res) {
 				console.dir(res);
 				if (cb) cb(res);
@@ -95,6 +102,7 @@ include.existsName = function (path, cb) {
 
 include.find = function (a) {
 	var lines = a.split('\n'),
+		reInclude = /(include <)+(.*)+(>;)/g,
 		inc = [];
 	for (var i = 0; i < lines.length; i++) {
 		if (lines[i].indexOf('include') !== -1
