@@ -55,7 +55,7 @@ var onchange = function (cm, change) {
 		if (isEditing(line, cha) === 'include') {
 			include.exists('/matt');
 		}
-		console.log(isEditing(line, char));
+		console.log(isEditing(line, cha));
 };
 
 //for triggering events when
