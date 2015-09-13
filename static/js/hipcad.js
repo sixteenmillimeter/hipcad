@@ -3,6 +3,12 @@
 'use strict';
 
 OpenJsCad.AlertUserOfUncaughtExceptions();
+var version = '0.017 (2014/01/07)';
+var me = document.location.toString().match(/^file:/)?'web-offline':'web-online'; // me: {cli, web-offline, web-online}
+var browser = 'unknown';
+if(navigator.userAgent.match(/(opera|chrome|safari|firefox|msie)/i)){
+	browser = RegExp.$1.toLowerCase();
+}
 
 var editor,
 	viewer,
