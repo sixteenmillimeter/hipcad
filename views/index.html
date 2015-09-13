@@ -17,6 +17,18 @@
 		<div id="viewer"></div>
 		<div id="errordiv"></div>
 		<div id="statusdiv"></div>
+		<div id="parametersdiv"></div>
+		<div id="tail">
+		<div id="filedropzone">
+		  <div id="filedropzone_filled">
+		    <span id="currentfile">...</span>
+		    <div id="filebuttons">
+		      <button id="getstlbutton" style="display:none" onclick="getStl();">Get STL</button>
+		      <button onclick="superviseAllFiles({forceReload:true});">Reload</button>
+			   <label for="autoreload">Auto Reload</label><input type="checkbox" name="autoreload" value="" id="autoreload" onclick="toggleAutoReload();">
+		    </div>
+		  </div>
+		</div>
 		<textarea id="console"></textarea>
 		<script src="/static/js/jquery-1.11.3.min.js"></script>
 		<script src="/static/js/CodeMirror-master/lib/codemirror.js"></script>
