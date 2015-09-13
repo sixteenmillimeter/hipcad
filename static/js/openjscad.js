@@ -512,9 +512,9 @@ OpenJsCad.parseJsCadScriptSync = function(script, mainParameters, debugging) {
 // callback: should be function(error, csg)
 OpenJsCad.parseJsCadScriptASync = function(script, mainParameters, options, callback) {
   var baselibraries = [
-    "js/csg.js",
-    "js/openjscad.js",
-    "js/openscad.js"
+    "static/js/csg.js",
+    "static/js/openjscad.js",
+    "static/js/openscad.js"
     //"jquery/jquery-1.9.1.js",
     //"jquery/jquery-ui.js"
   ];
