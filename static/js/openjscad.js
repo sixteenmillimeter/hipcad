@@ -713,8 +713,8 @@ OpenJsCad.AlertUserOfUncaughtExceptions = function() {
     message = message.replace(/^Uncaught /i, "");
     console.log(message);
     //HANDLE LINES HERE
-    if (ready) {
-      ready.log(message + " ("+url+" line "+line+")");
+    if (typeof Log !== 'undefined') {
+      Log(message + " ("+url+" line "+line+")");
     }
     //alert(message+"\n\n("+url+" line "+line+")");
   };
