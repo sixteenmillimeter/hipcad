@@ -2,6 +2,8 @@
 
 'use strict';
 
+OpenJsCad.AlertUserOfUncaughtExceptions();
+
 var editor,
 	viewer,
 	gProcessor;
@@ -63,6 +65,7 @@ var onchange = function (cm, change) {
 			include.exists('/matt');
 		}
 		console.log(isEditing(line, cha));
+		parseSCAD(body);
 };
 
 //for triggering events when
@@ -157,7 +160,7 @@ var Onchange = function () {
 	}
 };
 
-OpenJsCad.AlertUserOfUncaughtExceptions();
+
 
 var parseSCAD = function (source) {
 	gProcessor.setDebugging(false); 
