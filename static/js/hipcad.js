@@ -14,7 +14,7 @@ var onload = function () {
 			lineNumbers: true,
 			styleActiveLine: true,
 			matchBrackets: true,
-			theme: 'monokai',
+			theme: 'neat',
 			mode: 'clike'
 		};
 
