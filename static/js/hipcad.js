@@ -38,6 +38,10 @@ var onload = function () {
 	gProcessor = new OpenJsCad.Processor(document.getElementById('viewer'));
 
 	gProcessor.onchange = Onchange;
+
+	if (data !== null) {
+		parseSCAD(data);
+	}
 };
 
 var onchange = function (cm, change) {
