@@ -20,12 +20,46 @@
 		<script src="/static/js/CodeMirror-master/lib/codemirror.js"></script>
 		<script src="/static/js/CodeMirror-master/mode/clike/clike.js"></script>
 		<script src="/static/js/spin.min.js"></script>
-		<script src="/static/js/thingiview/Three.js"></script>
-		<script src="/static/js/thingiview/thingiview_ls3d.js"></script>
-		<script src="/static/js/thingiview/stats.js"></script>
-		<script src="/static/js/thingiview/plane.js"></script>
-		<script src="/static/js/thingiview/binaryReader.js"></script>
+		<script src="/static/js/lightgl.js"></script>
+		<script src="/static/js/csg.js"></script>
+		<script src="/static/js/openjscad.js"></script>
+		<script src="/static/js/openscad.js"></script>
+		<script src="/static/js/underscore.js"></script>
+		<script src="/static/js/openscad-openjscad-translator.js"></script>
 		<script src="/static/js/hipcad.js"></script>
+		<script id="conversionWorker" type="javascript/worker">
+
+			self.onmessage = function(e) {      
+				// Worker to import STL/OBJ as it can take quite some while for 1MB+ large STLs
+			   var data = e.data; // JSON.parse(e.data);
+			   me = data.me;     // required for openscad.js parse*() 
+			   version = data.version;          //     ''               ''
+
+			   if(data.url) {     // RANT: why do something simple, when it can be done complicate: Workers & importScripts() (guys!!)
+			      var url = data.url;
+			      url = url.replace(/#.*$/,'');    // -- just to be sure ...
+			      url = url.replace(/\?.*$/,'');
+			      var index = url.indexOf('index.html');
+			      if(index!=-1) {
+			         url = url.substring(0,index);
+			      }
+			      importScripts(url+'js/csg.js',url+'js/openjscad.js',url+'js/openscad.js');
+			      var src, type;
+			      data.filename.match(/\.(stl|obj|amf|gcode)$/i);
+			      type = RegExp.$1;
+			      if(type=='obj') {
+			         src = parseOBJ(data.source,data.filename);
+			      } else if(type=='amf') {
+			         src = parseAMF(data.source,data.filename);
+			      } else if(type=='gcode') {
+			         src = parseGCode(data.source,data.filename);
+			      } else {
+			         src = parseSTL(data.source,data.filename);
+			      }
+			      self.postMessage({ source: src, filename: data.filename, url: data.remote });
+			   }
+			};
+		</script>
 		<script>
 			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 			(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),

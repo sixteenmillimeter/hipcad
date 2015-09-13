@@ -3,16 +3,17 @@
 'use strict';
 
 var editor,
+	viewer,
 	onload;
 
 onload = function () {
 	var view = document.getElementById('viewport'),
 		txt = document.getElementById('code');
 	txt.height = window.innerHeight;
-	//var data = localStorage.getItem("compact");
-	//if (data !== null) {
-		//txt.value = compact.data;
-	//}
+	var data = localStorage.getItem('current');
+	if (data !== null) {
+		txt.value = compact.data;
+	}
 	editor = CodeMirror.fromTextArea(txt, {
 		lineNumbers: true,
 		styleActiveLine: true,
@@ -107,6 +108,7 @@ include.find = function (a) {
 	for (var i = 0; i < lines.length; i++) {
 		if (lines[i].indexOf('include') !== -1
 		&& lines[i].indexOf(';') !== -1) {
+			
 			inc.push(lines[i].match(/<[^>]*>/g)[0].replace('<','').replace('>', ''));
 		}
 	}
