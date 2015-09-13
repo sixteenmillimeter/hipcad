@@ -81,7 +81,7 @@ var onchange = function (cm, change) {
 //for triggering events when
 var isEditing = function (line, char) {
 	var area = null;
-	if (line.indexOf('include') !== -1) {
+	if (typeof line !== undefined && line.indexOf('include') !== -1) {
 		if (line.indexOf('<') < char
 			&& (line.indexOf('>') === -1 || line.indexOf('>') > char)
 		) {
