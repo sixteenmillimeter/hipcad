@@ -113,7 +113,12 @@ include.find = function (a) {
 	if (inc.length !== 0) {
 		console.dir(inc);
 	}
-
 	//$.ajax(obj);
+};
 
+include.toPath = function (str) {
+	var re1 = /(include)/g,
+		re2 = /(include )/g,
+		re3 = /([<>;])/g;
+	return str.replace(re1, '').replace(re2, '').replace(re3, '').trim();
 };
