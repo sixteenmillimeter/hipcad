@@ -20,7 +20,7 @@ var onload = function () {
 
 	txt.height = window.innerHeight;
 	if (data !== null) {
-		txt.value = compact.data;
+		txt.value = data;
 	}
 
 	editor = CodeMirror.fromTextArea(txt, cfg);
