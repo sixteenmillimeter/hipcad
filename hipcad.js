@@ -42,6 +42,8 @@ controller.fail = function (res, msg, status, json) {
 controller.home = function (req, res) {
 	hipcad.tag(req, res, function (req, res, tag) {
 		hipcad.logger.info(tag + ',200,Front page', 'controller');
+		//for development
+		hipcad.homePage = fs.readFileSync('views/index.html', 'utf8');
 		res.status(200).send(hipcad.page(hipcad.tmpl.home, {src: hipcad.homePage}));
 	});
 };
