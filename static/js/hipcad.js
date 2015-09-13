@@ -4,28 +4,32 @@
 
 var editor,
 	viewer,
-	onload;
+	gProcessor;
 
-onload = function () {
+var onload = function () {
 	var view = document.getElementById('viewport'),
 		txt = document.getElementById('code'),
-		data = localStorage.getItem('current');
-	txt.height = window.innerHeight;
+		data = localStorage.getItem('current'),
+		cfg = {
+			lineNumbers: true,
+			styleActiveLine: true,
+			matchBrackets: true,
+			theme: 'monokai',
+			mode: 'clike'
+		};
 
+	txt.height = window.innerHeight;
 	if (data !== null) {
 		txt.value = compact.data;
 	}
-	editor = CodeMirror.fromTextArea(txt, {
-		lineNumbers: true,
-		styleActiveLine: true,
-		matchBrackets: true,
-		theme: 'monokai',
-		mode: 'clike'
-	});
 
+	editor = CodeMirror.fromTextArea(txt, cfg);
 	editor.setSize(undefined, txt.height);
-
 	editor.on('change', onchange);
+
+	gProcessor = new OpenJsCad.Processor(document.getElementById('viewer'));
+
+	gProcessor.onchange = Onchange;
 };
 
 var onchange = function (cm, change) {
@@ -125,4 +129,73 @@ include.toPath = function (str) {
 		re2 = /(include )/g,
 		re3 = /([<>;])/g;
 	return str.replace(re1, '').replace(re2, '').replace(re3, '').trim();
+};
+
+
+//////////////////////////////////////////////////
+
+//Client code
+var gCurrentFile = null;
+var gProcessor = null;
+
+var gCurrentFiles = [];       // linear array, contains files (to read)
+var gMemFs = [];              // associated array, contains file content in source gMemFs[i].{name,source}
+var gMemFsCount = 0;          // async reading: count of already read files
+var gMemFsTotal = 0;          // async reading: total files to read (Count==Total => all files read)
+var gMemFsChanged = 0;        // how many files have changed
+var gRootFs = [];             // root(s) of folders 
+
+var gTime = 0;
+	
+var _includePath = './';
+	
+var Onchange = function () {
+	if (gTime !== 0) {
+		var end = +new Date();
+		Log('Generated in ' + (end - gTime) + ' ms')
+		gTime = 0;
+	}
+};
+
+OpenJsCad.AlertUserOfUncaughtExceptions();
+
+var parseSCAD = function (source) {
+	gProcessor.setDebugging(false); 
+	gTime = +new Date();
+	gProcessor.clearViewer();
+	var fn = 'livetext.scad';
+  	var editorSource = source;
+	if(!editorSource.match(/^\/\/!OpenSCAD/i)) {
+		editorSource = "//!OpenSCAD\n"+editorSource;
+	}
+	source = openscadOpenJscadParser.parse(editorSource);
+	if (0) {
+		source = "// OpenJSCAD.org: scad importer (openscad-openjscad-translator) '"+ fn + "'\n\n" + source;
+	}
+	if (gMemFs[fn] === undefined) { 
+		gMemFs[fn] = {
+			lang: "scad",
+			lastModifiedDate: null,
+			name: fn,
+			size: null,
+			source: "",
+			type: "",
+			webkitRelativePath: "",
+			};
+	}
+    gMemFs[fn].source = source;
+    gProcessor.setJsCad(source, fn);
+};
+
+var Build = function () {
+	parseSCAD(editor.getValue());
+
+};
+
+var Log = function (message) {
+	var cons = $('#console'),
+		log = cons.val() + message + '\n';
+	cons.val(log);
+	cons[0].scrollTop = cons[0].scrollHeight;
+	console.log(log);
 };
