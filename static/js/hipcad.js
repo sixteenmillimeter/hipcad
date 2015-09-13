@@ -8,9 +8,10 @@ var editor,
 
 onload = function () {
 	var view = document.getElementById('viewport'),
-		txt = document.getElementById('code');
+		txt = document.getElementById('code'),
+		data = localStorage.getItem('current');
 	txt.height = window.innerHeight;
-	var data = localStorage.getItem('current');
+
 	if (data !== null) {
 		txt.value = compact.data;
 	}
@@ -33,6 +34,7 @@ var onchange = function (cm, change) {
 	var body = editor.getValue(),
 		line = editor.getLine(change.to.line),
 		cha = change.to.ch;
+	localStorage.setItem('current', body);
 	console.log(line);
 	console.log(cha);
 		/*
