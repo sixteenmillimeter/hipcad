@@ -64,7 +64,7 @@ var onchange = function (cm, change) {
 		if (isEditing(line, cha) === 'include') {
 			include.exists('/matt');
 		}
-		console.log(isEditing(line, cha));
+		//console.log(isEditing(line, cha));
 		parseSCAD(body);
 };
 
