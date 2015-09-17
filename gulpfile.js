@@ -1,9 +1,10 @@
 var gulp = require('gulp'),
   less = require('gulp-less'),
-  concat = require('gulp-concat');
+  concat = require('gulp-concat'),
+  minify = require('gulp-minify');
 
 
-gulp.task('default', ['less', 'scripts']);
+gulp.task('default', ['less']);
 
 var scripts = [
 	'./static/js/jquery-1.11.3.min.js',
@@ -21,6 +22,7 @@ var scripts = [
 gulp.task('scripts', function () {
 	return gulp.src(scripts)
 		.pipe(concat({ path : './static/js/app.js', stat : { mode: 0755 }}))
+		.pipe(minify({}))
 		.pipe(gulp.dest('./'));
 });
 
