@@ -53,29 +53,10 @@ var onchange = function (cm, change) {
 	localStorage.setItem('current', body);
 	console.log(line);
 	console.log(cha);
-		/*
-		b = a.match(/\(/g),
-		c = a.match(/\)/g),
-		d = a.match(/\{/g),
-		e = a.match(/\}/g),
-		f = a.match(/\[/g),
-		g = a.match(/\]/g),
-		h = a.match(/\;/g);*/
-
-		//if (h !== null) {
-			//if ((b !== null && c !== null) && (b.length === c.length)) {
-				//if ((d === null && e === null) || (d.length === e.length)) {
-					//if ((f === null && g === null) || (f.length === g.length)) {
-						//includes(body);
-					//}
-				//}
-			//}
-		//}
-		if (isEditing(line, cha) === 'include') {
-			include.exists('/matt');
-		}
-		//console.log(isEditing(line, cha));
-		parseSCAD(body);
+	if (isEditing(line, cha) === 'include') {
+		include.exists('/matt');
+	}
+	parseSCAD(body);
 };
 
 //for triggering events when
