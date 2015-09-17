@@ -1,1 +1,48 @@
-body{margin:0;padding:0}#code{display:block;height:100%}#viewer{width:50%;position:absolute;top:0;right:0;bottom:0}.CodeMirror{width:50%}.divider{width:3px;background:#999;position:absolute;left:50%;top:0;bottom:0;border-left:1px solid #C0C0C0;border-right:1px solid #C0C0C0}
+body {
+  margin: 0;
+  padding: 0;
+}
+#code {
+  display: block;
+  height: 100%;
+}
+#viewer {
+  width: 50%;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+#console {
+  position: absolute;
+  bottom: 5px;
+  right: 10px;
+  display: block;
+  width: 20%;
+  height: 100px;
+  border: 0;
+  border-radius: 5px;
+  padding: 5px;
+  resize: none;
+  background: rgba(255, 255, 255, 0.5);
+}
+#statusdiv {
+  display: block;
+  position: absolute;
+  top: 4px;
+  right: 10px;
+  font-family: courier;
+}
+.CodeMirror {
+  width: 50%;
+}
+.divider {
+  width: 3px;
+  background: #999;
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid #C0C0C0;
+  border-right: 1px solid #C0C0C0;
+}
