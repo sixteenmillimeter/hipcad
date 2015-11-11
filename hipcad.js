@@ -142,8 +142,11 @@ app.use(expressSession({
 	saveUninitialized: true,
 	resave: true
 }));
+
 app.use(bodyParser.json({limit : '5mb'}));
 app.use(bodyParser.urlencoded({limit : '5mb', extended: false}));
+
+//app.use('/static', express.static(__dirname + '/static')); //for local dev
 
 app.get('/robots.txt', function(req, res) {
 	res.set('Content-Type', 'text/plain');
