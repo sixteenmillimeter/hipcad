@@ -1117,7 +1117,7 @@ OpenJsCad.Processor.prototype = {
     this.setError("");
     this.clearViewer();
     this.processing = true;
-    this.statusspan.innerHTML = "Rendering code, please wait <img id=busy src='imgs/busy.gif'>";
+    this.statusspan.innerHTML = "Rendering code, please wait <img id=busy src='/static/images/busy.gif'>";
     this.enableItems();
     var that = this;
     var paramValues = this.getParamValues();
@@ -1157,7 +1157,7 @@ OpenJsCad.Processor.prototype = {
     {
       try
       {
-        this.statusspan.innerHTML = "Rendering code, please wait <img id=busy src='imgs/busy.gif'>";
+        this.statusspan.innerHTML = "Rendering code, please wait <img id=busy src='/static/images/busy.gif'>";
         var obj = OpenJsCad.parseJsCadScriptSync(this.script, paramValues, this.debugging);
         that.setCurrentObject(obj);
         that.processing = false;

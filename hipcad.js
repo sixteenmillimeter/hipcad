@@ -11,8 +11,8 @@ var fs = require('fs'),
 
 var hipcad = require('./lib/core.js');
 hipcad.cfg = require('./lib/cfg.js');
-hipcad.users = require('./lib/users.js');
-hipcad.objects = require('./lib/objects.js');
+hipcad.users = require('./lib/users.js')(hipcad.cfg);
+hipcad.objects = require('./lib/objects.js')(hipcad.cfg);
 hipcad.tmpl = require('./lib/templates.js')(hipcad.cfg);
 hipcad.mail = require('./lib/mail.js')(hipcad.cfg);
 hipcad.log = require('./lib/logger.js')(hipcad.cfg, 'app');
@@ -43,8 +43,6 @@ controller.fail = function (res, msg, status, json) {
 controller.home = function (req, res) {
 	hipcad.tag(req, res, function (req, res, tag) {
 		hipcad.log.info(tag + ',200,Front page', 'controller');
-		//for development
-		hipcad.tmpl.home = fs.readFileSync('views/index.html', 'utf8');
 		res.status(200).send(hipcad.page(hipcad.tmpl.home, {src: hipcad.homePage}));
 	});
 };
@@ -147,7 +145,11 @@ app.use(expressSession({
 app.use(bodyParser.json({limit : '5mb'}));
 app.use(bodyParser.urlencoded({limit : '5mb', extended: false}));
 
-//app.use('/static', express.static(__dirname + '/static')); //for local dev
+hipcad.tmpl.assign('home', './views/index.html');
+hipcad.tmpl.assign('err', './views/err.html');
+hipcad.tmpl.assign('user', './views/user.html');
+
+app.use('/static', express.static(__dirname + '/static')); //for local dev
 
 app.get('/robots.txt', function(req, res) {
 	res.set('Content-Type', 'text/plain');
