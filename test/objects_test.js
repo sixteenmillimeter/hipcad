@@ -1,26 +1,44 @@
-var objects = require('../lib/objects.js');
-//objects.tests = function () {
-	//console.time('objects.tests');
-	//objects.index('matt', function (data) {
-		//console.timeEnd('objects.tests');
-	//})
-	//objects.create('matt', 'testobj22', 'This is bulshit source', function () {});
-//};
+var config = require('../lib/cfg.js'),
+	objects = require('../lib/objects.js')(config),
+	users = require('../lib/users.js')(config);
 
 setTimeout(function () {
-	console.time('took');
-	objects.index('matt', function (data) {
-		console.log(data);
-		objects.create('matt', 'testobj22', 'This is bulshit source', function () {
-			objects.index('matt', function (d) {
-				console.log(d);
-				objects.delete('matt', 'testobj22', function () {
-					objects.index('matt', function (d2) {
-						console.log(d2);
-						console.time('tookEnd');
-					});
-				});
-			});
-		});
-	})
-}, 1000);
+	var user = 'objTestUser',
+		email = 'mmcwilliams+object@aspectart.org',
+		pw = 'objTestUserPw1239!###',
+		testObj = 'testObj',
+		testSource= 'cube([100, 20, 20]);';
+	/*users.auth(user, pw, function (err, auth) {
+		if (err) {
+			console.error('users.auth test failed');
+			console.trace();
+		} else {
+			if (auth) {
+				console.log('users.auth test passed!');
+			} else {
+			console.error('users.auth test failed');
+			console.trace();
+			}
+		}
+		object.
+	});*/
+	var objectsExistsCb = function (exists) {
+		if (exists) {
+			console.error('objects.exists test failed');
+			console.trace();
+		} else {
+			console.log('objects.exists test passed!');
+		}
+		objects.create(username, object, source, objectsCreateCb);
+	},
+	objectsCreateCb = function (err, obj) {
+		if (err) {
+			console.error('objects.create test failed');
+			console.trace();
+		} else {
+
+		}
+	};
+	objects.exists(user, testObj, objectsExistsCb);
+	
+}, 500);

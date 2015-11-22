@@ -1,67 +1,82 @@
-var users = require('../lib/users.js');
+var config = require('../lib/cfg.js'),
+	users = require('../lib/users.js')(config);
 
 setTimeout(function () {
-		//console.time('users.test');
-		//console.timeEnd('users.test');
-		/*
-		users.create('matt', 'mmcwilliams@aspectart.org', 'test', function (obj) {
-			console.dir(obj);
-			users.exists('matt', function (exists) {
-				console.log(exists);
-				users.login('matt', 'test', function (success) {
-					if (success) {
-						console.log('logged in!');
-					} else {
-						console.log('login failed');
-					}
-					
-				});
-			});
-		});
-		users.available('matt', null, null, function (success) {
-			if (success) {
-				console.log('users.available failed user check');
+	console.time('all tests');
+	var testUser = 'TestUserString',
+		testEmail = 'testuser@testemail.com',
+		testPw = 'pwstring123',
+	userExistsTest = function (exists) {
+		if (!exists) {
+			console.log('user.exists test passed!');
+		} else {
+			console.error('user.exists test failed');
+			console.trace();
+		}
+		users.available('static', testEmail, testPw, userAvailableTest);
+	},
+	userAvailableTest = function (available) {
+		if (!available) {
+			console.log('user.available test passed!');
+		} else {
+			console.error('user.available test failed');
+			console.trace();
+		}
+		users.available(testUser, testEmail, testPw, userAvailableTest2);
+	},
+	userAvailableTest2 = function (available) {
+		if (available) {
+			console.log('user.available test 2 passed!');
+		} else {
+			console.error('user.available test 2 failed');
+			console.trace();
+		}
+		users.create(testUser, testEmail, testPw, userCreateTest);
+	},
+	userCreateTest = function (err, data) {
+		if (err) {
+			console.error('user.create test failed');
+			console.trace();
+		} else {
+			console.log('user.create test passed');
+		}
+		users.auth(testUser, testPw, userLoginTest);
+	},
+	userLoginTest = function (err, auth) {
+		if (err) {
+			console.error('user.auth test failed');
+			console.trace();
+		} else {
+			if (auth) {
+				console.log('user.auth test passed!')
 			} else {
-				console.log('users.available passed user check');
+				console.error('user.auth test failed');
+				console.trace();
 			}
-		});
-	
-	users.available('impossiblenonrealuser', 'matt@gmail.com', 'passwird123', function (success) {
-		if (success) {
-			console.log('users.available passed user check');
-		} else {
-			console.log('users.available failed user check');
 		}
-	});*/
-	//users.create('hipcad', 'mmcwilliams@aspectart.org', 'test1234', function (obj) {
-		//console.dir(obj);
-		/*users.exists('hipcad', function (exists) {
-			console.log('exists:');
-			console.log(exists);
-			users.login('matt', 'test1234', function (success) {
-				if (success) {
-					console.log('logged in!');
-				} else {
-					console.log('login failed');
-				}
-				
-			});
-		});*/
-	//});
+		users.destroy(testUser, testPw, userDestroyTest);
+	},
+	userDestroyTest = function (err, destroyed) {
+		if (err) {
+			console.log(err);
 
-	users.create('matt', 'mmcwilliams@aspectart.org', 'b@dp@ssw0rd', function (success) {
-		if (success) {
-			console.log('worked!');
+			console.error('user.destroy test failed');
+			console.trace();
 		} else {
-			console.log('fuck!');
+			if (destroyed) {
+				console.log('user.destroy test passed!')
+			} else {
+				console.error('user.destroy test failed');
+				console.trace();
+			}
 		}
-	});
-				/*users.login('matt', 'test12345', function (success) {
-				if (success) {
-					console.log('logged in!');
-				} else {
-					console.log('login failed');
-				}
-				
-			});*/
+		console.timeEnd('all tests');
+	};
+	
+	users.exists(testUser, userExistsTest);
+	/*	var user = 'objTestUser',
+		email = 'mmcwilliams+object@aspectart.org',
+		pw = 'objTestUserPw1239!###';
+	users.create(user, email, pw, function(){});
+	*/
 }, 500);

@@ -18,6 +18,7 @@ hipcad.mail = require('./lib/mail.js')(hipcad.cfg);
 hipcad.log = require('./lib/logger.js')(hipcad.cfg, 'app');
 
 hipcad.init = function () {
+	'use strict';
 	hipcad.log.infoPath = hipcad.cfg.logs;
 	if (hipcad.cmd('-d', '--dev')) {
 	    hipcad.log.info('Running in development mode');
@@ -32,6 +33,8 @@ hipcad.init = function () {
 
 var controller = {};
 controller.fail = function (res, msg, status, json) {
+	'use strict';
+	var page;
 	if (json) {
 		page = {success: false, err : msg};
 		return res.status(status).json(page);
@@ -41,98 +44,126 @@ controller.fail = function (res, msg, status, json) {
 	}
 };
 controller.home = function (req, res) {
-	hipcad.tag(req, res, function (req, res, tag) {
+	'use strict';
+	var tagUserCb = function (req, res, tag) {
 		hipcad.log.info(tag + ',200,Front page', 'controller');
 		res.status(200).send(hipcad.page(hipcad.tmpl.home, {src: hipcad.homePage}));
-	});
+	};
+	hipcad.tag(req, res, tagUserCb);
 };
-controller.user = function (req, res) {
+
+controller.user = {};
+controller.user.get = function (req, res) {
+	'use strict';
 	var user = req.params['user'],
 		json = false,
-		page;
+		page,
+		tag;
 	if (req.query
 		&& req.query['json']
 		&& req.query['json'] === 'true') {
 		json = true;
 	}
-	hipcad.tag(req, res, function (req, res, tag) {
-		hipcad.users.exists(user, function (uexists) {
-			if (uexists) {
-				hipcad.objects.index(user, function (data) {
-					if (json) {
-						page = {success: true, user : user, objects: data};
-						hipcad.log.info(tag + ',200,/' + user + ',json', 'controller');
-						return res.status(200).json(page);
-					} else {
-						hipcad.log.info(tag + ',200,/' + user, 'controller');
-						page = hipcad.page(hipcad.tmpl.user, {user:user, objects:data});
-					}
-					return res.status(200).send(page);
-				});
-			} else {
-				hipcad.log.info(tag + ',404,/' + user, 'controller');
-				controller.fail(res, 'Page not found.', 404, json);
-			}
+	var tagUserCb = function (req, res, t) {
+		tag = t;
+		hipcad.users.exists(user, userExistsCb);
+	},
+	userExistsCb = function (uexists) {
+		if (uexists) {
+			hipcad.objects.index(user, userIndexCb);
+		} else {
+			hipcad.log.info(tag + ',404,/' + user, 'controller');
+			controller.fail(res, 'Page not found.', 404, json);
+		}
 
-		});
-	});
+	},
+	userIndexCb = function (err, data) {
+		//TODO: handle err
+		if (json) {
+			page = {success: true, user : user, objects: data};
+			hipcad.log.info(tag + ',200,/' + user + ',json', 'controller');
+			return res.status(200).json(page);
+		} else {
+			hipcad.log.info(tag + ',200,/' + user, 'controller');
+			page = hipcad.page(hipcad.tmpl.user, {user:user, objects:data});
+		}
+		return res.status(200).send(page);
+	};
+	hipcad.tag(req, res, tagUserCb);
 };
-controller.object = function (req, res) {
+
+controller.object = {};
+controller.object.get = function (req, res) {
+	'use strict';
 	var user = req.params['user'],
 		object = req.params['object'],
 		json = false,
 		page;
+
 	if (req.query
 		&& req.query['json']
 		&& req.query['json'] === 'true') {
 		json = true;
 	}
-	hipcad.tag(req, res, function (req, res, tag) {
-		hipcad.users.exists(user, function (uexists) {
-			if (uexists) {
-				hipcad.objects.exists(user, object, function (oexists) {
-					if (oexists) {
-						//hipcad.log.info('User ' + tag + ' requested page for /' + user + '/' + object);
-						hipcad.objects.get(user, object, function (obj) {
-							if (json) {
-								hipcad.log.info(tag + ',200,/' + user + '/' + object + ',json', 'controller');
-								delete obj.id;
-								res.status(200).json({success: true, object: obj});
-							} else {
-								hipcad.log.info(tag + ',200,/' + user + '/' + object, 'controller');
-								res.status(200).send(hipcad.page(hipcad.tmpl.home, {src: obj.src}));
-							}
-						});
-					} else {
-						//hipcad.log.info('User ' + tag + ' requested non-existant page for /' + user + '/' + object);
-						hipcad.log.info(tag + ',404,/' + user + '/' + object, 'controller');
-						controller.fail(res, 'Page not found.', 404, json);
-					}
-				});
-			} else {
-				//hipcad.log.info('User ' + tag + ' requested non-existant page for /' + user + '/' + object);
-				hipcad.log.info(tag + ',404,/' + user + '/' + object, 'controller');
-				controller.fail(res, 'Page not found.', 404, json);
-			}
-		});
-	});
+	var tagUserCb = function (req, res, tag) {
+		hipcad.users.exists(user, userExistsCb);
+	},
+	userExistsCb = function (uexists) {
+		if (uexists) {
+			hipcad.objects.exists(user, object, objectExitsCb);
+		} else {
+			//hipcad.log.info('User ' + tag + ' requested non-existant page for /' + user + '/' + object);
+			hipcad.log.info(tag + ',404,/' + user + '/' + object, 'controller');
+			controller.fail(res, 'Page not found.', 404, json);
+		}
+	},
+	objectExistsCb = function (oexists) {
+		if (oexists) {
+			//hipcad.log.info('User ' + tag + ' requested page for /' + user + '/' + object);
+			hipcad.objects.get(user, object, objectGetCb);
+		} else {
+			//hipcad.log.info('User ' + tag + ' requested non-existant page for /' + user + '/' + object);
+			hipcad.log.info(tag + ',404,/' + user + '/' + object, 'controller');
+			controller.fail(res, 'Page not found.', 404, json);
+		}
+	},
+	objectGetCb = function (err, obj) {
+		//TODO: handle err
+		if (json) {
+			hipcad.log.info(tag + ',200,/' + user + '/' + object + ',json', 'controller');
+			delete obj.id;
+			res.status(200).json({success: true, object: obj});
+		} else {
+			hipcad.log.info(tag + ',200,/' + user + '/' + object, 'controller');
+			res.status(200).send(hipcad.page(hipcad.tmpl.home, {src: obj.src}));
+		}
+	};
+	hipcad.tag(req, res, tagUserCb);
 };
+
+controller.object.create = function () {};
+controller.object.update = function () {};
+controller.object.destroy = function () {};
+
 controller.login = function (req, res) {
+	'use strict';
 	var username, pwstring;
-	hipcad.tag(req, res, function (req, res, tag) {
+	var tagUserCb = function (req, res, tag) {
 		username = req.body.user;
 		pwstring = req.body.pwstring;
-		hipcad.users.login(username, pwstring, function (success) {
-			if (success) {
-				hipcad.log.info(tag + ',200,Logged in,' + username, 'controller');
-				//give token
-				res.status(200).json({success: success});
-			} else {
-				hipcad.log.info(tag + ',401.1,Failed login,' + username);
-				controller.fail(res, 'User login failed', 401.1, true);
-			}
-		});
-	});
+		hipcad.users.auth(username, pwstring, userLoginCb);
+	},
+	userLoginCb = function (success) {
+		if (success) {
+			hipcad.log.info(tag + ',200,Logged in,' + username, 'controller');
+			//give token
+			res.status(200).json({success: success});
+		} else {
+			hipcad.log.info(tag + ',401.1,Failed login,' + username);
+			controller.fail(res, 'User login failed', 401.1, true);
+		}
+	};
+	hipcad.tag(req, res, tagUserCb);
 };
 
 app.use(cookieParser(hipcad.cfg.cookie_secret));
@@ -152,14 +183,24 @@ hipcad.tmpl.assign('user', './views/user.html');
 app.use('/static', express.static(__dirname + '/static')); //for local dev
 
 app.get('/robots.txt', function(req, res) {
+	'use strict';
 	res.set('Content-Type', 'text/plain');
 	res.send('User-agent: *\nDisallow: /\nUser-agent: Googlebot\nAllow: /\nUser-agent: Slurp\nAllow: /\nUser-agent: bingbot\nAllow: /');
 });
 
 app.get('/', controller.home);
-app.get('/:user', controller.user);
-app.get('/:user/:object', controller.object);
-//app.get('/:user/:object/:rev', controller.revision);
+
+app.get('/:user', controller.user.get);
+//app.post('/:user');
+//app.put('/:user');
+//app.delete('/:user');
+
+app.get('/:user/:object', controller.object.get);
+	//app.get('/:user/:object/:rev', controller.revision);
+app.post('/:user/:object', controller.object.create);
+app.put('/:user/:object', controller.object.update);
+app.delete('/:user/:object', controller.object.destroy);
+
 
 //app.get('/static/'); -> being reserved by nginx
 app.post('/user/login', controller.login);
