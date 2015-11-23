@@ -38,7 +38,7 @@ setTimeout(function () {
 			console.error('user.create test failed');
 			console.trace();
 		} else {
-			console.log('user.create test passed');
+			console.log('user.create test passed!');
 		}
 		users.auth(testUser, testPw, userLoginTest);
 	},
