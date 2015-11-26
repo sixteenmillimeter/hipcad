@@ -98,14 +98,16 @@ controller.object.get = function (req, res) {
 	var user = req.params['user'],
 		object = req.params['object'],
 		json = false,
-		page;
+		page,
+		tag;
 
 	if (req.query
 		&& req.query['json']
 		&& req.query['json'] === 'true') {
 		json = true;
 	}
-	var tagUserCb = function (req, res, tag) {
+	var tagUserCb = function (req, res, tagOutput) {
+		tag = tagOutput;
 		hipcad.users.exists(user, userExistsCb);
 	},
 	userExistsCb = function (uexists) {
