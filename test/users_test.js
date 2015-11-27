@@ -77,6 +77,6 @@ setTimeout(function () {
 	/*	var user = 'objTestUser',
 		email = 'mmcwilliams+object@aspectart.org',
 		pw = 'objTestUserPw1239!###';
-	users.create(user, email, pw, function(){});
-	*/
+	users.create(user, email, pw, function(){});*/
+	
 }, 500);

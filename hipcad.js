@@ -55,13 +55,11 @@ controller.home = function (req, res) {
 controller.user = {};
 controller.user.get = function (req, res) {
 	'use strict';
-	var user = req.params['user'],
+	var user = req.params.user,
 		json = false,
 		page,
 		tag;
-	if (req.query
-		&& req.query['json']
-		&& req.query['json'] === 'true') {
+	if (req.query && req.query.json && req.query.json === 'true') {
 		json = true;
 	}
 	var tagUserCb = function (req, res, t) {
@@ -95,15 +93,13 @@ controller.user.get = function (req, res) {
 controller.object = {};
 controller.object.get = function (req, res) {
 	'use strict';
-	var user = req.params['user'],
-		object = req.params['object'],
+	var user = req.params.user,
+		object = req.params.object,
 		json = false,
 		page,
 		tag;
 
-	if (req.query
-		&& req.query['json']
-		&& req.query['json'] === 'true') {
+	if (req.query && req.query.json && req.query.json === 'true') {
 		json = true;
 	}
 	var tagUserCb = function (req, res, tagOutput) {
@@ -112,24 +108,21 @@ controller.object.get = function (req, res) {
 	},
 	userExistsCb = function (uexists) {
 		if (uexists) {
-			hipcad.objects.exists(user, object, objectExitsCb);
+			hipcad.objects.exists(user, object, objectsExistsCb);
 		} else {
-			//hipcad.log.info('User ' + tag + ' requested non-existant page for /' + user + '/' + object);
 			hipcad.log.info(tag + ',404,/' + user + '/' + object, 'controller');
 			controller.fail(res, 'Page not found.', 404, json);
 		}
 	},
-	objectExistsCb = function (oexists) {
+	objectsExistsCb = function (oexists) {
 		if (oexists) {
-			//hipcad.log.info('User ' + tag + ' requested page for /' + user + '/' + object);
-			hipcad.objects.get(user, object, objectGetCb);
+			hipcad.objects.get(user, object, objectsGetCb);
 		} else {
-			//hipcad.log.info('User ' + tag + ' requested non-existant page for /' + user + '/' + object);
 			hipcad.log.info(tag + ',404,/' + user + '/' + object, 'controller');
 			controller.fail(res, 'Page not found.', 404, json);
 		}
 	},
-	objectGetCb = function (err, obj) {
+	objectsGetCb = function (err, obj) {
 		//TODO: handle err
 		if (json) {
 			hipcad.log.info(tag + ',200,/' + user + '/' + object + ',json', 'controller');

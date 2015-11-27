@@ -23,7 +23,7 @@ var onload = function () {
 			styleActiveLine: true,
 			matchBrackets: true,
 			theme: 'neat',
-			mode: 'clike'
+			mode: 'OpenSCAD'
 		};
 
 	txt.height = window.innerHeight;
