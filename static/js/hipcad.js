@@ -101,20 +101,18 @@ include.existsName = function (path, cb) {
 	$.ajax(obj);
 };
 
-include.find = function (a) {
+include.parse = function (a) {
 	var lines = a.split('\n'),
 		reInclude = /(include <)+(.*)+(>;)/g,
-		inc = [];
-	for (var i = 0; i < lines.length; i++) {
-		if (lines[i].indexOf('include') !== -1
-		&& lines[i].indexOf(';') !== -1) {
-			
-			inc.push(lines[i].match(/<[^>]*>/g)[0].replace('<','').replace('>', ''));
-		}
-	}
-	if (inc.length !== 0) {
+
+		inc = lines.filter(function (elem) {
+			if (elem.indexOf('include') !== -1
+			&& elem.indexOf(';') !== -1) {
+				return elem;
+			}
+		});
+		inc = inc.map(include.toPath);
 		console.dir(inc);
-	}
 	//$.ajax(obj);
 };
 
@@ -122,7 +120,14 @@ include.toPath = function (str) {
 	var re1 = /(include)/g,
 		re2 = /(include )/g,
 		re3 = /([<>;])/g;
-	return str.replace(re1, '').replace(re2, '').replace(re3, '').trim();
+		str = str.replace(re1, '').replace(re2, '').replace(re3, '').trim();
+		if (str[0] === '/') {
+
+		}
+		if (str[str.length - 1] === '/') {
+
+		}
+	return str;
 };
 
 
@@ -137,12 +142,12 @@ var gMemFs = [];              // associated array, contains file content in sour
 var gMemFsCount = 0;          // async reading: count of already read files
 var gMemFsTotal = 0;          // async reading: total files to read (Count==Total => all files read)
 var gMemFsChanged = 0;        // how many files have changed
-var gRootFs = [];             // root(s) of folders 
+var gRootFs = [];             // root(s) of folders
 
 var gTime = 0;
-	
+
 var _includePath = './';
-	
+
 var Onchange = function () {
 	if (gTime !== 0) {
 		var end = +new Date();
@@ -154,7 +159,7 @@ var Onchange = function () {
 
 
 var parseSCAD = function (source) {
-	gProcessor.setDebugging(false); 
+	gProcessor.setDebugging(false);
 	gTime = +new Date();
 	gProcessor.clearViewer();
 	var fn = 'livetext.scad';
@@ -166,7 +171,7 @@ var parseSCAD = function (source) {
 	if (0) {
 		source = "// OpenJSCAD.org: scad importer (openscad-openjscad-translator) '"+ fn + "'\n\n" + source;
 	}
-	if (gMemFs[fn] === undefined) { 
+	if (gMemFs[fn] === undefined) {
 		gMemFs[fn] = {
 			lang: "scad",
 			lastModifiedDate: null,
