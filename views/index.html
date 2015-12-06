@@ -10,8 +10,19 @@
 		<link rel="stylesheet" href="/static/js/CodeMirror-master/lib/codemirror.css">
 		<link rel="stylesheet" href="/static/js/CodeMirror-master/theme/neat.css">
 		<link rel="stylesheet" href="/static/css/hipcad.css">
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+		<!-- Optional theme -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
 	</head>
 	<body style="height: 100%; width: 100%;" onload="onload();">
+		<ul class="menu">
+			<li id="menuNew">New</li>
+			<li disabled>Save</li>
+			<li disabled>Open</li>
+		</ul> 
 		<textarea id="code" name="code">{{src}}</textarea>
 		<div class="divider"></div>
 		<div id="viewer"></div>
@@ -19,17 +30,18 @@
 		<div id="statusdiv"></div>
 		<div id="parametersdiv"></div>
 		<div id="tail">
-		<div id="filedropzone">
-		  <div id="filedropzone_filled">
-		    <span id="currentfile">...</span>
-		    <div id="filebuttons">
-		      <button id="getstlbutton" style="display:none" onclick="getStl();">Get STL</button>
-		      <button onclick="superviseAllFiles({forceReload:true});">Reload</button>
-			   <label for="autoreload">Auto Reload</label><input type="checkbox" name="autoreload" value="" id="autoreload" onclick="toggleAutoReload();">
-		    </div>
-		  </div>
+			<div id="filedropzone">
+			  <div id="filedropzone_filled">
+			    <span id="currentfile">...</span>
+			    <div id="filebuttons">
+			      <button id="getstlbutton" style="display:none" onclick="getStl();">Get STL</button>
+			      <button onclick="superviseAllFiles({forceReload:true});">Reload</button>
+				   <label for="autoreload">Auto Reload</label><input type="checkbox" name="autoreload" value="" id="autoreload" onclick="toggleAutoReload();">
+			    </div>
+			  </div>
+			</div>
+			<textarea id="console"></textarea>
 		</div>
-		<textarea id="console"></textarea>
 		<script src="/static/js/jquery-1.11.3.min.js"></script>
 		<script src="/static/js/CodeMirror-master/lib/codemirror.js"></script>
 		<script src="/static/js/CodeMirror-master/mode/clike/clike.js"></script>
@@ -40,38 +52,44 @@
 		<script src="/static/js/openscad.js"></script>
 		<script src="/static/js/underscore.js"></script>
 		<script src="/static/js/openscad-openjscad-translator.js"></script>
+		<script src="/static/js/bootbox.min.js"></script>
 		<script src="/static/js/hipcad.js"></script>
+		<!-- Latest compiled and minified JavaScript -->
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 		<script id="conversionWorker" type="javascript/worker">
-self.onmessage = function(e) {      
-	// Worker to import STL/OBJ as it can take quite some while for 1MB+ large STLs
-   var data = e.data; // JSON.parse(e.data);
-   me = data.me;     // required for openscad.js parse*() 
-   version = data.version;          //     ''               ''
+		self.onmessage = function(e) {      
+			// Worker to import STL/OBJ as it can take quite some while for 1MB+ large STLs
+		   var data = e.data; // JSON.parse(e.data);
+		   me = data.me;     // required for openscad.js parse*() 
+		   version = data.version;          //     ''               ''
 
-   if(data.url) {     // RANT: why do something simple, when it can be done complicate: Workers & importScripts() (guys!!)
-      var url = data.url;
-      url = url.replace(/#.*$/,'');    // -- just to be sure ...
-      url = url.replace(/\?.*$/,'');
-      var index = url.indexOf('index.html');
-      if(index!=-1) {
-         url = url.substring(0,index);
-      }
-      importScripts(url+'static/js/csg.js',url+'static/js/openjscad.js',url+'static/js/openscad.js');
-      var src, type;
-      data.filename.match(/\.(stl|obj|amf|gcode)$/i);
-      type = RegExp.$1;
-      if(type=='obj') {
-         src = parseOBJ(data.source,data.filename);
-      } else if(type=='amf') {
-         src = parseAMF(data.source,data.filename);
-      } else if(type=='gcode') {
-         src = parseGCode(data.source,data.filename);
-      } else {
-         src = parseSTL(data.source,data.filename);
-      }
-      self.postMessage({ source: src, filename: data.filename, url: data.remote });
-   }
-};
+		   if (data.url) {     // RANT: why do something simple, when it can be done complicate: Workers & importScripts() (guys!!)
+		      var url = data.url;
+		      url = url.replace(/#.*$/,'');    // -- just to be sure ...
+		      url = url.replace(/\?.*$/,'');
+		      var index = url.indexOf('index.html');
+		      if (index != -1) {
+		         url = url.substring(0, index);
+		      }
+		      importScripts(url+'static/js/csg.js',url+'static/js/openjscad.js',url+'static/js/openscad.js');
+		      var src, type;
+		      data.filename.match(/\.(stl|obj|amf|gcode)$/i);
+		      type = RegExp.$1;
+		      if(type=='obj') {
+		         src = parseOBJ(data.source,data.filename);
+		      } else if(type=='amf') {
+		         src = parseAMF(data.source,data.filename);
+		      } else if(type=='gcode') {
+		         src = parseGCode(data.source,data.filename);
+		      } else {
+		         src = parseSTL(data.source,data.filename);
+		      }
+		      self.postMessage({ source: src, filename: data.filename, url: data.remote });
+		   }
+		};
+		</script>
+		<script>
+		var pageData = {{{pageData}}};
 		</script>
 		<script>
 			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
