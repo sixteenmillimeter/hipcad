@@ -3,7 +3,7 @@ var config = require('../lib/cfg.js'),
 
 setTimeout(function () {
 	console.time('all tests');
-	var testUser = 'TestUserString',
+	var testUser = 'TestUserString' ,
 		testEmail = 'testuser@testemail.com',
 		testPw = 'pwstring123',
 	userExistsTest = function (exists) {

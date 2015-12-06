@@ -15,6 +15,7 @@ var editor,
 	gProcessor;
 
 var onload = function () {
+	'use strict'
 	var view = document.getElementById('viewport'),
 		txt = document.getElementById('code'),
 		data = localStorage.getItem('current'),
@@ -23,8 +24,12 @@ var onload = function () {
 			styleActiveLine: true,
 			matchBrackets: true,
 			theme: 'neat',
-			mode: 'OpenSCAD'
+			mode: 'lua'
 		};
+
+	if (typeof pageData.session !== 'undefined' && pageData.session === true) {
+		$('.menu li').removeAttr('disabled');
+	}
 
 	txt.height = window.innerHeight;
 	if (data !== null) {
@@ -34,6 +39,12 @@ var onload = function () {
 	editor = CodeMirror.fromTextArea(txt, cfg);
 	editor.setSize(undefined, txt.height);
 	editor.on('change', onchange);
+
+	menu.init();
+
+	$(window).on('hashchange', function() {
+	  alert(document.location.hash);
+	});
 
 	gProcessor = new OpenJsCad.Processor(document.getElementById('viewer'));
 
@@ -50,13 +61,11 @@ var onchange = function (cm, change) {
 	var body = editor.getValue(),
 		line = editor.getLine(change.to.line),
 		cha = change.to.ch;
-	localStorage.setItem('current', body);
-	console.log(line);
-	console.log(cha);
-	if (isEditing(line, cha) === 'include') {
-		include.exists('/matt');
+	if (!users.mode) {
+		localStorage.setItem('current', body);
+		//includes
+		parseSCAD(body);
 	}
-	parseSCAD(body);
 };
 
 //for triggering events when
@@ -72,18 +81,34 @@ var isEditing = function (line, char) {
 	return area;
 };
 
-var include = {};
-include.store = {};
-include.exists = function (path) {
-	var slashes = (path.match(new RegExp('/', 'g')) || []).length;
-	if (slashes === 0) {
-		include.existsName(path);
-	} else if (slashes === 1 || path.trim()[0] === '/') {
-		include.existsName(path);
-	} else if ((slashes === 1 || path.trim()[0] !== '/') || slashes === 2) {
-
+var menu = {};
+menu.user = false;
+menu.init = function () {
+	'use strict';
+	if (pageData && pageData.user) {
+		menu.user = true;
+	} else {
+		menu.user = false;
+	}
+	$('#menuNew').on('click', menu.newAction);
+};
+menu.newAction = function () {
+	var str;
+	if (menu.user) {
+		str = '';
+		bootbox.prompt(str, function (val) {
+			objects.create(pageData.username + '/' + val, function (err, doc) {
+				//
+			});
+		});
+	} else {
+		str = 'To create or save objects, you must be logged in. <a href="#login">Login</a> or <a href="#signup">signup!</a>';
+		bootbox.alert(str);
 	}
 };
+
+var include = {};
+include.store = {};
 
 include.existsName = function (path, cb) {
 	var cleanName = path.replace('/', '').trim(),
@@ -102,6 +127,7 @@ include.existsName = function (path, cb) {
 };
 
 include.find = function (a) {
+	'use strict';
 	var lines = a.split('\n'),
 		reInclude = /(include <)+(.*)+(>;)/g,
 		inc = [];
@@ -119,10 +145,89 @@ include.find = function (a) {
 };
 
 include.toPath = function (str) {
+	'use strict';
 	var re1 = /(include)/g,
 		re2 = /(include )/g,
 		re3 = /([<>;])/g;
 	return str.replace(re1, '').replace(re2, '').replace(re3, '').trim();
+};
+
+var objects = {};
+
+objects.exists = function (path, callback) {
+	'use strict';
+	var slashes = (path.match(new RegExp('/', 'g')) || []).length;
+	if (slashes === 0) {
+		objects.existsName(path);
+	} else if (slashes === 1 || path.trim()[0] === '/') {
+		objects.existsName(path);
+	} else if ((slashes === 1 || path.trim()[0] !== '/') || slashes === 2) {
+
+	}
+
+	callback();
+};
+
+objects.existsName = function (path, cb) {
+	var cleanName = path.replace('/', '').trim(),
+		obj = {
+			url : '/' + cleanName + '?json=true',
+			type: 'GET',
+			data : {
+				source : ''
+			},
+			success : function (res) {
+				console.dir(res);
+				if (cb) cb(res);
+			},
+			error : function (err) {
+				console.log(err);
+			}
+	};
+	$.ajax(obj);
+};
+
+objects.get = function (path, callback) {
+	'use strict';
+
+};
+
+objects.create = function (path, callback) {
+	'use strict';
+	var obj = {
+		url : path + '?json=true',
+		type : 'POST',
+		success : function (data) {
+			console.dir(data);
+		}, 
+		error : function (err) {
+			console.error(err);
+		}
+	};
+	$.ajax(obj);
+};
+
+var users = {};
+
+users.get = function (user, callback) {
+	'use strict';
+	var obj = {
+		url : '/' + user + '?json=true',
+		type: 'GET',
+		success : function (data) {
+			callback(data);
+		},
+		error : function (err) {
+			console.error(err);
+		}
+	};
+	$.ajax(obj);
+};
+users.mode = false;
+users.layout = function (data) {
+	'use strict';
+	var onclick;
+	user.mode = true;
 };
 
 
