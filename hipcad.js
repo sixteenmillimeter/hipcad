@@ -90,15 +90,26 @@ controller.user.get = function (req, res) {
 		page,
 		pageData = {},
 		tag,
-		recaptcha;
-	var tagUserCb = function (req, res, tagOutput) {
+		recaptcha,
+		logOb = {
+			path : '/' + user,
+			tag : '',
+			status : 200,
+			json : json
+		},
+	tagUserCb = function (req, res, tagOutput) {
 		tag = tagOutput;
+
+		logObj.tag = tag;
+
 		controller.auth(req, res, authCb);
 	},
 	authCb = function (err, auth) {
 		if (auth) {
 			pageData.session = true;
 			pageData.username = req.session.token.username;
+
+			logData.username = req.session.token.username;
 		} else {
 			recaptcha = new Recaptcha(hipcad.cfg.RECAPTCHA_PUBLIC_KEY, hipcad.cfg.RECAPTCHA_PRIVATE_KEY);
 			pageData.recaptcha = encodeURIComponent(recaptcha.toHTML());
@@ -109,7 +120,8 @@ controller.user.get = function (req, res) {
 		if (uexists) {
 			hipcad.objects.index(user, userIndexCb);
 		} else {
-			hipcad.log.info(tag + ',404,/' + user, 'controller');
+			logObj.status = 404;
+			hipcad.log.info('controller.user.get', logObj);
 			controller.fail(res, 'Page not found.', 404, json);
 		}
 
@@ -118,7 +130,7 @@ controller.user.get = function (req, res) {
 		//TODO: handle err
 		if (json) {
 			page = {success: true, user : user, objects: data};
-			hipcad.log.info(tag + ',200,/' + user + ',json', 'controller');
+			hipcad.log.info('controller.user.get', logObj);
 			return res.status(200).json(page);
 		} else {
 			pageData.type = 'user';
@@ -130,7 +142,7 @@ controller.user.get = function (req, res) {
 				src: JSON.stringify(data, null, '\t'),
 				title : ' - ' + user
 			};
-			hipcad.log.info(tag + ',200,/' + user, 'controller');
+			hipcad.log.info('controller.user.get', logObj);
 			return res.status(200).send(hipcad.page(hipcad.tmpl.home, page));	}
 	};
 	hipcad.tag(req, res, tagUserCb);
@@ -167,6 +179,8 @@ controller.object.get = function (req, res) {
 		if (auth) {
 			pageData.session = true;
 			pageData.username = req.session.token.username;
+
+			logData.username = req.session.token.username;
 		} else {
 			recaptcha = new Recaptcha(hipcad.cfg.RECAPTCHA_PUBLIC_KEY, hipcad.cfg.RECAPTCHA_PRIVATE_KEY);
 			pageData.recaptcha = encodeURIComponent(recaptcha.toHTML());
@@ -265,26 +279,38 @@ controller.login = function (req, res) {
 	'use strict';
 	var username, 
 		pwstring, 
+		json = controller.json(req),
 		tag,
 		logObj = {
-			path : '/user/login'
+			path : '/user/login',
+			tag : '',
+			status : 200,
+			username: '',
+			json : json
 		},
 	tagUserCb = function (req, res, tagOutput) {
 		tag = tagOutput;
+		
 		username = req.body.user;
 		pwstring = req.body.pwstring;
+		
+		logObj.tag = tag;
+		logObj.username = username;
+
 		hipcad.users.auth(username, pwstring, usersLoginCb);
 	},
 	usersLoginCb = function (err, success) {
 		if (err) {
-			hipcad.log.warn(tag + ',401.1,Failed login,' + username);
+			logObj.status = 401.1;
+			hipcad.log.warn('controller.login', logObj);
 			hipcad.log.error(err);
 			return controller.fail('User login failed', 401.1, true);
 		}
 		if (success) {
 			hipcad.users.get(username, usersGetCb);
 		} else {
-			hipcad.log.info(tag + ',401.1,Failed login,' + username);
+			logObj.status = 401.1;
+			hipcad.log.warn('controller.login', logObj);
 			controller.fail('User login failed', 401.1, true);
 		}
 	},
@@ -292,7 +318,8 @@ controller.login = function (req, res) {
 		var tokenObj,
 		opt;
 		if (err) {
-			hipcad.log.warn(tag + ',401.1,Failed login,' + username);
+			logObj.status = 401.1;
+			hipcad.log.warn('controller.login', logObj);
 			hipcad.log.error(err);
 			return controller.fail('User login failed', 401.1, true);
 		}
@@ -303,10 +330,6 @@ controller.login = function (req, res) {
 			username : body.username,
 			expires: +new Date() + (24 * 60 * 60 * 1000) //1 day
 		};
-
-		logObj.tag = tag;
-		logObj.status = 200;
-		logObj.username = username;
 
 		req.session.token = tokenObj;
 		hipcad.log.info('controller.login', logObj);
