@@ -1,21 +1,19 @@
-hipcad
-
-Hyperlinking for scriptable CAD
-
-include
+include <mmcwilliams/demo>;
 
 /*
 
-Hi!
+Wecome to hipcad!
 
-Hipcad is an online editor for OpenSCAD that lets you host and link to publicly available scripts.
+Use hypertext to script objects in OpenSCAD.
 
-Look at the above example: include </matt/hi.scad>;
+The first line in this script embeds the OpenSCAD 
+script "demo" by user "mmcwilliams" (that's me!) 
+into your working script. Remove it by commenting 
+out or deleting the line. You can view the file by 
+itself @
 
-This includes the file "hi.scad" by user "matt" (that's me!) to your working script. Remove it by commenting out or deleting the line; You can view the file by itself here: https://hipcad.com/matt/hi.scad
+https://hipcad.com/mmcwilliams/demo
 
-Create, share and link files together to build objects. Sign up here (email for password reset only*).
-
-*There is also a welcome email.
+Try it out!
 
 */
