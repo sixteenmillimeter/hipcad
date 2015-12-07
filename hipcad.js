@@ -53,7 +53,8 @@ controller.home = function (req, res) {
 	var pageData = {},
 		page,
 		tag,
-		recaptcha;
+		recaptcha,
+		logObj = {};
 	var tagUserCb = function (req, res, tagRaw) {
 		tag = tagRaw;
 		controller.auth(req, res, authCb);
@@ -71,7 +72,10 @@ controller.home = function (req, res) {
 			pageData: JSON.stringify(pageData),
 			title : ''
 		};
-		hipcad.log.info(tag + ',200,Front page', 'controller');
+		logObj.tag = tag;
+		logObj.path = '/';
+		logObj.status = 200;
+		hipcad.log.info(logObj);
 		res.status(200).send(hipcad.page(hipcad.tmpl.home, page));
 
 	};
@@ -303,17 +307,19 @@ controller.logout = function (req, res) {
 		tag,
 		tagUserCb = function (tagOutput) {
 			tag = tagOutput;
+
 			if (req.session && req.session.token) {
 				realSession = true;
 				username = req.session.token.username;
 				delete req.session.token;
 			}
+
 			logObj.tag = tag;
 			logObj.path = '/user/logout';
 			logObj.username = username;
 			logObj.realSession = realSession;
 
-			hipcad.log.info(logObj);
+			hipcad.log.info('logout', logObj);
 
 			if (json) {
 				res.status(200).json({success: realSession});

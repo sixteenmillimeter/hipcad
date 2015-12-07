@@ -171,14 +171,21 @@ include.process = function (source, callback) {
 		}),
 		count = -1,
 		next = function () {
-			if (count++ === lines.length) {
+			count++;
+			if (count === lines.length) {
 				//
 				callback(source);
 			} else {
-				include.get(paths[count], function (res) {
-					source = source.replace(lines[count], '\n' + res + '\n');
+				if (paths[count] !== undefined) {
+					include.get(paths[count], function (res) {
+						if (res.object) {
+							source = source.replace(lines[count], '//' + lines[count] + '\n' + res.object.src + '\n');
+						}
+						next();
+					});
+				} else {
 					next();
-				});
+				}
 			}
 		};
 	next();
@@ -216,7 +223,7 @@ include.toPath = function (str) {
 	if (slashes) {
 
 	}
-	return str;
+	return str.trim();
 };
 
 include.get = function (cleanPath, callback) {
@@ -227,6 +234,7 @@ include.get = function (cleanPath, callback) {
 	objects.get(cleanPath, function (err, res) {
 		if (err) {
 			console.error(err);
+			return callback('');
 		}
 		console.dir(res);
 		include.store[cleanPath] = res;
@@ -458,28 +466,30 @@ var parseSCAD = function (source) {
 	gProcessor.setDebugging(false);
 	gTime = +new Date();
 	gProcessor.clearViewer();
-	var fn = 'livetext.scad';
-  	var editorSource = source;
-	if(!editorSource.match(/^\/\/!OpenSCAD/i)) {
-		editorSource = "//!OpenSCAD\n"+editorSource;
-	}
-	source = openscadOpenJscadParser.parse(editorSource);
-	if (0) {
-		source = "// OpenJSCAD.org: scad importer (openscad-openjscad-translator) '"+ fn + "'\n\n" + source;
-	}
-	if (gMemFs[fn] === undefined) {
-		gMemFs[fn] = {
-			lang: "scad",
-			lastModifiedDate: null,
-			name: fn,
-			size: null,
-			source: "",
-			type: "",
-			webkitRelativePath: "",
-			};
-	}
-    gMemFs[fn].source = source;
-    gProcessor.setJsCad(source, fn);
+	include.process(source, function (source) {
+		var fn = 'livetext.scad';
+	  	var editorSource = source;
+		if(!editorSource.match(/^\/\/!OpenSCAD/i)) {
+			editorSource = "//!OpenSCAD\n"+editorSource;
+		}
+		source = openscadOpenJscadParser.parse(editorSource);
+		if (0) {
+			source = "// OpenJSCAD.org: scad importer (openscad-openjscad-translator) '"+ fn + "'\n\n" + source;
+		}
+		if (gMemFs[fn] === undefined) {
+			gMemFs[fn] = {
+				lang: "scad",
+				lastModifiedDate: null,
+				name: fn,
+				size: null,
+				source: "",
+				type: "",
+				webkitRelativePath: "",
+				};
+		}
+	    gMemFs[fn].source = source;
+	    gProcessor.setJsCad(source, fn);
+	});
 };
 
 var Build = function () {
@@ -492,7 +502,7 @@ var Log = function (message) {
 		log = cons.val() + message + '\n';
 	cons.val(log);
 	cons[0].scrollTop = cons[0].scrollHeight;
-	console.log(log);
+	console.log(message);
 };
 
 $(document).ready(onload);
