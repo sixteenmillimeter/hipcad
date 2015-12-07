@@ -6,7 +6,9 @@ var fs = require('fs'),
 	bodyParser = require('body-parser'),
 	cookieParser = require('cookie-parser'),
 	expressSession = require('express-session'),
+	Recaptcha = require('recaptcha').Recaptcha,
 	//RedisStore = require('connect-redis')(expressSession),
+	FileStore = require('session-file-store')(expressSession)
     moment = require('moment'),
     path = require('path'),
     uuid = require('node-uuid'),
@@ -50,7 +52,8 @@ controller.home = function (req, res) {
 	'use strict';
 	var pageData = {},
 		page,
-		tag;
+		tag,
+		recaptcha;
 	var tagUserCb = function (req, res, tagRaw) {
 		tag = tagRaw;
 		controller.auth(req, res, authCb);
@@ -58,6 +61,10 @@ controller.home = function (req, res) {
 	authCb = function (err, auth) {
 		if (auth) {
 			pageData.session = true;
+			pageData.username = req.session.token.username;
+		} else {
+			recaptcha = new Recaptcha(hipcad.cfg.RECAPTCHA_PUBLIC_KEY, hipcad.cfg.RECAPTCHA_PRIVATE_KEY);
+			pageData.recaptcha = encodeURIComponent(recaptcha.toHTML());
 		}
 		page = {
 			src: hipcad.homePage, 
@@ -75,13 +82,10 @@ controller.user = {};
 controller.user.get = function (req, res) {
 	'use strict';
 	var user = req.params.user,
-		json = false,
+		json = controller.json(req),
 		page,
 		pageData = {},
 		tag;
-	if (req.query && req.query.json && req.query.json === 'true') {
-		json = true;
-	}
 	var tagUserCb = function (req, res, t) {
 		tag = t;
 		hipcad.users.exists(user, userExistsCb);
@@ -102,9 +106,7 @@ controller.user.get = function (req, res) {
 			hipcad.log.info(tag + ',200,/' + user + ',json', 'controller');
 			return res.status(200).json(page);
 		} else {
-			pageData = {
-				type : 'user'
-			};
+			pageData.type = 'user';
 			data = data.map(function (elem) {
 				return elem.path;
 			});
@@ -119,19 +121,21 @@ controller.user.get = function (req, res) {
 	hipcad.tag(req, res, tagUserCb);
 };
 
+controller.user.create = function (req, res) {
+	'use strict';
+
+};
+
 controller.object = {};
 controller.object.get = function (req, res) {
 	'use strict';
 	var user = req.params.user,
 		object = req.params.object,
-		json = false,
+		json = controller.json(req),
 		page,
-		pageData,
+		pageData = {},
 		tag;
 
-	if (req.query && req.query.json && req.query.json === 'true') {
-		json = true;
-	}
 	var tagUserCb = function (req, res, tagOutput) {
 		tag = tagOutput;
 		hipcad.users.exists(user, userExistsCb);
@@ -160,13 +164,11 @@ controller.object.get = function (req, res) {
 			delete obj.id;
 			res.status(200).json({success: true, object: obj});
 		} else {
-			pageData = {
-				type : 'object'
-			};
+			pageData.type = 'object';
 			page = {
 				pageData : JSON.stringify(pageData),
 				src: obj.src,
-				title : ' - ' + user + '/' + object
+				title : ' - ' + user + '/' + object,
 			};
 			hipcad.log.info(tag + ',200,/' + user + '/' + object, 'controller');
 			res.status(200).send(hipcad.page(hipcad.tmpl.home, page));
@@ -178,10 +180,11 @@ controller.object.get = function (req, res) {
 controller.object.create = function (req, res) {
 	'use strict';
 	var tag,
-		json = false,
+		json = controller.json(req),
 		username,
 		object,
 		source,
+		logObj = {},
 	tagUserCb = function (req, res, tagOutput) {
 		tag = tagOutput;
 		controller.auth(req, req, authCb);
@@ -196,21 +199,29 @@ controller.object.create = function (req, res) {
 		source = req.body.source;
 
 		if (username !== req.session.token.username) {
-			hipcad.log.error('Unauthorized accesss attempt');
-			hipcad.log.error(req);
+			hipcad.log.error('Unauthorized access attempt');
+			hipcad.log.error(req.params);
 			return controller.fail(res, 'Unauthorized Access', 403, json);
 		}
 
-		objects.create(username, object, source, function (err, data) {
-
-		});
+		hipcad.objects.create(username, object, source, objectsCreateCb);
 	},
 	objectsCreateCb = function (err, data) {
-
+		if (err) {
+			hipcad.log.error(err);
+			return controller.fail(res, 'Server error', 500, json);
+		}
+		logObj.tag = tag;
+		logObj.path = username + '/' + object;
+		logObj.username = username;
+		logObj.statusCode = 200;
+		hipcad.log.info(logObj);
+		if (json) {
+			res.status(200).json({success: true});
+		} else {
+			res.redirect(username + '/' + object);
+		}
 	};
-	if (req.query && req.query.json && req.query.json === 'true') {
-		json = true;
-	}
 	hipcad.tag(req, res, tagUserCb);
 };
 controller.object.update = function () {};
@@ -218,7 +229,9 @@ controller.object.destroy = function () {};
 
 controller.login = function (req, res) {
 	'use strict';
-	var username, pwstring, tag;
+	var username, 
+		pwstring, 
+		tag;
 	var tagUserCb = function (req, res, tagRaw) {
 		tag = tagRaw;
 		username = req.body.user;
@@ -262,9 +275,37 @@ controller.login = function (req, res) {
 
 controller.logout = function (req, res) {
 	'use strict';
-	if (req.session && req.session.token) {
-		delete req.session.token;
-	}
+	var json = controller.json(req),
+		logObj = {},
+		realSession = false,
+		username,
+		tag,
+		tagUserCb = function (tagOutput) {
+			tag = tagOutput;
+			if (req.session && req.session.token) {
+				realSession = true;
+				username = req.session.token.username;
+				delete req.session.token;
+			}
+			logObj.tag = tag;
+			logObj.path = '/user/logout';
+			logObj.username = username;
+			logObj.realSession = realSession;
+
+			hipcad.log.info(logObj);
+
+			if (json) {
+				res.status(200).json({success: realSession});
+			} else {
+				res.redirect('/');
+			}
+		}
+	hipcad.tag(req, res, tagUserCb);
+};
+
+controller.json = function (req) {
+	'use strict';
+	return (req.query && req.query.json && req.query.json === 'true');
 };
 
 controller.auth = function (req, res, callback) {
@@ -286,6 +327,7 @@ controller.auth = function (req, res, callback) {
 app.use(cookieParser(hipcad.cfg.cookie_secret));
 app.use(expressSession({
 	//store: new RedisStore(options),
+	store: new FileStore(),
 	secret: hipcad.cfg.session_secret,
 	saveUninitialized: true,
 	resave: true,
@@ -312,7 +354,8 @@ app.get('/', controller.home);
 //app.get('/static/'); -> being reserved by nginx
 app.post('/user/login', controller.login);
 app.post('/user/logout', controller.logout);
-app.get('/user/logout');
+app.get('/user/logout', controller.logout);
+
 app.post('/user/create');
 
 //app.post('/object/create/:user/:object');

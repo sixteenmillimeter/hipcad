@@ -520,6 +520,7 @@ OpenJsCad.parseJsCadScriptASync = function(script, mainParameters, options, call
   ];
 
   var baseurl = document.location.href.replace(/\?.*$/, '');
+  baseurl = baseurl.split('/');
   baseurl = baseurl.replace(/#.*$/,'');        // remove remote URL 
   var openjscadurl = baseurl;
   if (options['openJsCadPath'] != null) {

@@ -29,6 +29,7 @@ var onload = function () {
 
 	if (typeof pageData.session !== 'undefined' && pageData.session === true) {
 		$('.menu li').removeAttr('disabled');
+		$('#menuUserAction').attr('onclick', 'logout();').text('Logout');
 	}
 
 	txt.height = window.innerHeight;
@@ -58,18 +59,25 @@ var onload = function () {
 	
 	menu.init();
 
-	$(window).on('hashchange', function() {
-	  alert(document.location.hash);
-	});
+	$(window).on('hashchange', hashAction);
+	hashAction();
 
 	gProcessor = new OpenJsCad.Processor(document.getElementById('viewer'));
-
 	gProcessor.onchange = Onchange;
 
-	if (data !== null) {
-		parseSCAD(data);
-	}
+	Build();
 };
+
+var hashAction = function () {
+	'use strict';
+	var action = document.location.hash;
+		bootbox.hideAll();
+		if (action === '#login') {
+			login();
+		} else if (action === '#signup') {
+			signup();
+		}
+	}
 
 var onchange = function (cm, change) {
 	//console.log(cm);
@@ -107,19 +115,32 @@ menu.init = function () {
 		menu.user = false;
 	}
 	$('#menuNew').on('click', menu.newAction);
+	$('#menuOpen').on('click', menu.openAction);
 };
 menu.newAction = function () {
 	var str;
 	if (menu.user) {
 		str = 'Name of new object';
 		bootbox.prompt(str, function (val) {
-			objects.create(pageData.username + '/' + val, function (err, doc) {
-				//
-			});
+			if (val !== null && val !== undefined && val !== '') {
+				objects.create(pageData.username + '/' + val, '', function (err, doc) {
+					if (err) {
+						return console.error(err);
+					}
+					document.location = '/' + pageData.username + '/' + val;
+				});
+			}
 		});
 	} else {
-		str = 'To create or save objects, you must be logged in. <a href="#login">Login</a> or <a href="#signup">signup!</a>';
+		str = 'To create or save objects, you must be logged in. <a href="#login">Login</a> or <a href="#signup">sign up!</a>';
 		bootbox.alert(str);
+	}
+};
+
+menu.openAction = function () {
+	'use strict';
+	if (pageData.session) {
+		document.location = '/' + pageData.username;
 	}
 };
 
@@ -263,11 +284,14 @@ objects.get = function (cleanPath, cb) {
 	};
 	$.ajax(obj);
 };
-objects.create = function (path, callback) {
+objects.create = function (path, source, callback) {
 	'use strict';
 	var obj = {
 		url : path + '?json=true',
 		type : 'POST',
+		data : {
+			source : source
+		},
 		success : function (data) {
 			console.dir(data);
 		}, 
@@ -309,12 +333,11 @@ var login = function () {
             message: 
             	'<div class="row">  ' +
                 	'<div class="col-md-12"> ' +
-                		'<form class="form-horizontal"> ' +
-                			'<div class="form-group col-md-8" style="margin: 0 auto;"> ' +
-                				'<label class="col-md-4 control-label" for="user">Username</label> ' +
-                				'<input id="user" name="user" type="text" placeholder="Username" class="form-control input-md"> ' +
-                				'<label class="col-md-4 control-label" for="pwstring">Password</label> ' +
-                				'<input id="pwstring" name="pwstring" type="password" placeholder="Password" class="form-control input-md"> ' +
+                		'<form class="form-horizontal" id="login"> ' +
+                			'<div class="form-group col-md-8" style="margin: 0 auto; float: none;"> ' +
+                				'<input id="user" name="user" type="text" placeholder="Username" class="form-control input-md" style="margin-bottom: 20px;"> ' +
+                				'<input id="pwstring" name="pwstring" type="password" placeholder="Password" class="form-control input-md" style="margin-bottom: 20px;"> ' +
+                				'<div id="signupLink">Don\'t have an account? <a href="#signup">Sign up!</a>' +
                 			'</div> ' +
                 		'</form> </div> </div>',
             buttons: {
@@ -329,7 +352,70 @@ var login = function () {
                     			user : $('#user').val(),
                     			pwstring : $('#pwstring').val()
                     		},
-                    		success : function () {},
+                    		success : function () {
+                    			document.location = '/';
+                    		},
+                    		error : function () {}
+                    	};
+                        $.ajax(query);
+                    }
+                }
+            }
+        }
+    );
+};
+
+var logout = function () {
+	'use strict';
+	var query = {
+		url : '/user/logout?json=true',
+		type : 'POST',
+		success : function () {
+			document.location = '/';
+		},
+		error : function () {}
+	};
+	$.ajax(query);
+};
+
+var signup = function () {
+	'use strict';
+	var recaptcha = '';
+	if (pageData.recaptcha){
+		recaptcha = decodeURIComponent(pageData.recaptcha);
+	}
+	bootbox.dialog({
+            title: "Create an account",
+            message: 
+            	'<div class="row">  ' +
+                	'<div class="col-md-12"> ' +
+                		'<form class="form-horizontal" id="signup"> ' +
+                			'<div class="form-group col-md-8" style="margin: 0 auto; float: none;"> ' +
+                			 '<input id="email" name="email" type="text" placeholder="Email address" class="form-control input-md" style="margin-bottom: 20px;"> ' +
+                				'<input id="user" name="user" type="text" placeholder="Username" class="form-control input-md" style="margin-bottom: 20px;"> ' +
+                				'<input id="pwstring" name="pwstring" type="password" placeholder="Password" class="form-control input-md" style="margin-bottom: 20px;"> ' +
+                				'<input id="pwstring2" name="pwstring2" type="password" placeholder="Password again" class="form-control input-md" style="margin-bottom: 20px;"> ' +
+                				'<div id="recaptchaWrapper">' +
+                				recaptcha + 
+                				'</div>' +
+                				'<div id="loginLink">Already have an account? <a href="#login">Login</a>' +
+                			'</div> ' +
+                		'</form> </div> </div>',
+            buttons: {
+                success: {
+                    label: "Sign up",
+                    className: "btn-success",
+                    callback: function () {
+                    	var query = {
+                    		url : '/user/login?json=true',
+                    		type : 'POST',
+                    		data : {
+                    			user : $('#user').val(),
+                    			pwstring : $('#pwstring').val()
+                    		},
+                    		success : function () {
+                    			document.location = '/';
+                    		},
                     		error : function () {}
                     	};
                         $.ajax(query);

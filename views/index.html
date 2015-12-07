@@ -21,7 +21,8 @@
 		<ul class="menu">
 			<li id="menuNew">New</li>
 			<li disabled>Save</li>
-			<li disabled>Open</li>
+			<li id="menuOpen" disabled>Open</li>
+			<li id="menuUserAction" onclick="login();">Login</li>
 		</ul> 
 		<textarea id="code" name="code">{{src}}</textarea>
 		<div class="divider"></div>
@@ -44,7 +45,7 @@
 		</div>
 		<script src="/static/js/jquery-1.11.3.min.js"></script>
 		<script src="/static/js/CodeMirror-master/lib/codemirror.js"></script>
-		<script src="/static/js/CodeMirror-master/mode/clike/clike.js"></script>
+		<script src="/static/js/CodeMirror-master/mode/lua/lua.js"></script>
 		<script src="/static/js/spin.min.js"></script>
 		<script src="/static/js/lightgl.js"></script>
 		<script src="/static/js/csg.js"></script>
