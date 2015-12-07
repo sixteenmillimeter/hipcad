@@ -346,7 +346,6 @@ controller.logout = function (req, res) {
 		tag,
 	tagUserCb = function (req, res, tagOutput) {
 		tag = tagOutput;
-		console.log(tag);
 		if (req.session && req.session.token) {
 			realSession = true;
 			username = req.session.token.username;
