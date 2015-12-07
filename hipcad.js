@@ -6,8 +6,10 @@ var fs = require('fs'),
 	bodyParser = require('body-parser'),
 	cookieParser = require('cookie-parser'),
 	expressSession = require('express-session'),
+	//RedisStore = require('connect-redis')(expressSession),
     moment = require('moment'),
     path = require('path'),
+    uuid = require('node-uuid'),
     cfg = require('./lib/cfg.js');
 
 var hipcad = require('./lib/core.js')(cfg);
@@ -46,15 +48,25 @@ controller.fail = function (res, msg, status, json) {
 };
 controller.home = function (req, res) {
 	'use strict';
-	var tagUserCb = function (req, res, tag) {
-		var pageData = {
-		},
+	var pageData = {},
+		page,
+		tag;
+	var tagUserCb = function (req, res, tagRaw) {
+		tag = tagRaw;
+		controller.auth(req, res, authCb);
+	},
+	authCb = function (err, auth) {
+		if (auth) {
+			pageData.session = true;
+		}
 		page = {
 			src: hipcad.homePage, 
-			pageData: JSON.stringify(pageData)
-		}
+			pageData: JSON.stringify(pageData),
+			title : ''
+		};
 		hipcad.log.info(tag + ',200,Front page', 'controller');
 		res.status(200).send(hipcad.page(hipcad.tmpl.home, page));
+
 	};
 	hipcad.tag(req, res, tagUserCb);
 };
@@ -65,6 +77,7 @@ controller.user.get = function (req, res) {
 	var user = req.params.user,
 		json = false,
 		page,
+		pageData = {},
 		tag;
 	if (req.query && req.query.json && req.query.json === 'true') {
 		json = true;
@@ -89,10 +102,19 @@ controller.user.get = function (req, res) {
 			hipcad.log.info(tag + ',200,/' + user + ',json', 'controller');
 			return res.status(200).json(page);
 		} else {
+			pageData = {
+				type : 'user'
+			};
+			data = data.map(function (elem) {
+				return elem.path;
+			});
+			page = {
+				pageData : JSON.stringify(pageData),
+				src: JSON.stringify(data, null, '\t'),
+				title : ' - ' + user
+			};
 			hipcad.log.info(tag + ',200,/' + user, 'controller');
-			page = hipcad.page(hipcad.tmpl.user, {user:user, objects:data});
-		}
-		return res.status(200).send(page);
+			return res.status(200).send(hipcad.page(hipcad.tmpl.home, page));	}
 	};
 	hipcad.tag(req, res, tagUserCb);
 };
@@ -104,6 +126,7 @@ controller.object.get = function (req, res) {
 		object = req.params.object,
 		json = false,
 		page,
+		pageData,
 		tag;
 
 	if (req.query && req.query.json && req.query.json === 'true') {
@@ -115,6 +138,7 @@ controller.object.get = function (req, res) {
 	},
 	userExistsCb = function (uexists) {
 		if (uexists) {
+			console.log(user+ '/' + object);
 			hipcad.objects.exists(user, object, objectsExistsCb);
 		} else {
 			hipcad.log.info(tag + ',404,/' + user + '/' + object, 'controller');
@@ -136,9 +160,13 @@ controller.object.get = function (req, res) {
 			delete obj.id;
 			res.status(200).json({success: true, object: obj});
 		} else {
+			pageData = {
+				type : 'object'
+			};
 			page = {
-				pageData : JSON.stringify({}),
-				src: obj.src
+				pageData : JSON.stringify(pageData),
+				src: obj.src,
+				title : ' - ' + user + '/' + object
 			};
 			hipcad.log.info(tag + ',200,/' + user + '/' + object, 'controller');
 			res.status(200).send(hipcad.page(hipcad.tmpl.home, page));
@@ -197,7 +225,12 @@ controller.login = function (req, res) {
 		pwstring = req.body.pwstring;
 		hipcad.users.auth(username, pwstring, usersLoginCb);
 	},
-	usersLoginCb = function (success) {
+	usersLoginCb = function (err, success) {
+		if (err) {
+			hipcad.log.info(tag + ',401.1,Failed login,' + username);
+			hipcad.log.error(err);
+			return controller.fail(res, 'User login failed', 401.1, true);
+		}
 		if (success) {
 			hipcad.users.get(username, usersGetCb);
 		} else {
@@ -222,7 +255,7 @@ controller.login = function (req, res) {
 		};
 		req.session.token = tokenObj;
 		hipcad.log.info(tag + ',200,Logged in,' + username, 'controller');
-		res.status(200).json({success: success});
+		res.status(200).json({success: true});
 	};
 	hipcad.tag(req, res, tagUserCb);
 };
@@ -236,10 +269,9 @@ controller.logout = function (req, res) {
 
 controller.auth = function (req, res, callback) {
 	'use strict';
-	var authToken;
 	if (req && req.session && req.session.token) {
-		if (+new Date() > req.session.token.expires) {
-			if (authToken.id.length === 36) {
+		if (+new Date() < req.session.token.expires) {
+			if (req.session.token.id.length === 36) {
 				return callback(null, true);
 			}
 		} else {
@@ -253,9 +285,11 @@ controller.auth = function (req, res, callback) {
 
 app.use(cookieParser(hipcad.cfg.cookie_secret));
 app.use(expressSession({
+	//store: new RedisStore(options),
 	secret: hipcad.cfg.session_secret,
 	saveUninitialized: true,
-	resave: true
+	resave: true,
+	maxAge: 24 * 3600000
 }));
 
 app.use(bodyParser.json({limit : '5mb'}));
@@ -275,6 +309,16 @@ app.get('/robots.txt', function(req, res) {
 
 app.get('/', controller.home);
 
+//app.get('/static/'); -> being reserved by nginx
+app.post('/user/login', controller.login);
+app.post('/user/logout', controller.logout);
+app.get('/user/logout');
+app.post('/user/create');
+
+//app.post('/object/create/:user/:object');
+//app.post('/object/update/:user/:object');
+//app.post('/object/delete/:user/:object');
+
 app.get('/:user', controller.user.get);
 //app.post('/:user');
 //app.put('/:user');
@@ -285,16 +329,5 @@ app.get('/:user/:object', controller.object.get);
 app.post('/:user/:object', controller.object.create);
 app.put('/:user/:object', controller.object.update);
 app.delete('/:user/:object', controller.object.destroy);
-
-
-//app.get('/static/'); -> being reserved by nginx
-app.post('/user/login', controller.login);
-app.post('/user/logout', controller.logout);
-app.get('/user/logout');
-app.post('/user/create');
-
-app.post('/object/create/:user/:object');
-app.post('/object/update/:user/:object');
-app.post('/object/delete/:user/:object');
 
 hipcad.init();

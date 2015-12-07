@@ -33,13 +33,29 @@ var onload = function () {
 
 	txt.height = window.innerHeight;
 	if (data !== null) {
-		txt.value = data;
+		if (typeof pageData.type !== 'undefined' 
+			&& (pageData.type === 'object'
+			|| pageData.type === 'user')
+		) {
+			cfg.readOnly = true;
+			console.log('Setting to readonly');
+		} else {
+			txt.value = data;
+		}
 	}
 
 	editor = CodeMirror.fromTextArea(txt, cfg);
 	editor.setSize(undefined, txt.height);
-	editor.on('change', onchange);
 
+	if (typeof pageData.type !== 'undefined' 
+		&& (pageData.type === 'object'
+		|| pageData.type === 'user')
+		) {
+
+	} else {
+		editor.on('change', onchange);
+	}
+	
 	menu.init();
 
 	$(window).on('hashchange', function() {
@@ -85,7 +101,7 @@ var menu = {};
 menu.user = false;
 menu.init = function () {
 	'use strict';
-	if (pageData && pageData.user) {
+	if (pageData && pageData.session) {
 		menu.user = true;
 	} else {
 		menu.user = false;
@@ -95,7 +111,7 @@ menu.init = function () {
 menu.newAction = function () {
 	var str;
 	if (menu.user) {
-		str = '';
+		str = 'Name of new object';
 		bootbox.prompt(str, function (val) {
 			objects.create(pageData.username + '/' + val, function (err, doc) {
 				//
@@ -126,39 +142,75 @@ include.existsName = function (path, cb) {
 	$.ajax(obj);
 };
 
-<<<<<<< HEAD
-include.find = function (a) {
+include.process = function (source, callback) {
 	'use strict';
-=======
+	var lines = include.parse(source),
+		paths = lines.map(function (elem) {
+			return include.toPath(elem);
+		}),
+		count = -1,
+		next = function () {
+			if (count++ === lines.length) {
+				//
+				callback(source);
+			} else {
+				include.get(paths[count], function (res) {
+					source = source.replace(lines[count], '\n' + res + '\n');
+					next();
+				});
+			}
+		};
+	next();
+};
+	
 include.parse = function (a) {
->>>>>>> origin/master
+	'use strict';
 	var lines = a.split('\n'),
 		reInclude = /(include <)+(.*)+(>;)/g,
-
 		inc = lines.filter(function (elem) {
 			if (elem.indexOf('include') !== -1
+			&& elem.indexOf('<') !== -1
+			&& elem.indexOf('>') !== -1
 			&& elem.indexOf(';') !== -1) {
 				return elem;
 			}
-		});
-		inc = inc.map(include.toPath);
-		console.dir(inc);
-	//$.ajax(obj);
+		}); 
+	return inc;
 };
 
 include.toPath = function (str) {
 	'use strict';
 	var re1 = /(include)/g,
 		re2 = /(include )/g,
-		re3 = /([<>;])/g;
-		str = str.replace(re1, '').replace(re2, '').replace(re3, '').trim();
-		if (str[0] === '/') {
+		re3 = /([<>;])/g,
+		slashes;
+	str = str.replace(re1, '').replace(re2, '').replace(re3, '').trim();
+	if (str[0] === '/') {
+		str = str.substring(1);
+	}
+	if (str[str.length - 1] === '/') {
+		str = str.slice(0, -1);
+	}
+	slashes = (str.match(new RegExp('/', 'g')) || []).length;
+	if (slashes) {
 
-		}
-		if (str[str.length - 1] === '/') {
-
-		}
+	}
 	return str;
+};
+
+include.get = function (cleanPath, callback) {
+	'use strict';
+	if (typeof include.store[cleanPath] !== 'undefined') {
+		return callback(include.store[cleanPath]);
+	}
+	objects.get(cleanPath, function (err, res) {
+		if (err) {
+			console.error(err);
+		}
+		console.dir(res);
+		include.store[cleanPath] = res;
+		callback(res);
+	})
 };
 
 var objects = {};
@@ -177,10 +229,9 @@ objects.exists = function (path, callback) {
 	callback();
 };
 
-objects.existsName = function (path, cb) {
-	var cleanName = path.replace('/', '').trim(),
-		obj = {
-			url : '/' + cleanName + '?json=true',
+objects.existsName = function (cleanPath, cb) {
+	var obj = {
+			url : '/' + cleanPath + '?json=true',
 			type: 'GET',
 			data : {
 				source : ''
@@ -196,11 +247,22 @@ objects.existsName = function (path, cb) {
 	$.ajax(obj);
 };
 
-objects.get = function (path, callback) {
+objects.get = function (cleanPath, cb) {
 	'use strict';
-
+	var obj = {
+		url : '/' + cleanPath + '?json=true',
+		type: 'GET',
+		success : function (res) {
+			console.dir(res);
+			if (cb) cb(null, res);
+		},
+		error : function (err) {
+			console.log(err);
+			if(cb) cb(err);
+		}
+	};
+	$.ajax(obj);
 };
-
 objects.create = function (path, callback) {
 	'use strict';
 	var obj = {
@@ -224,10 +286,11 @@ users.get = function (user, callback) {
 		url : '/' + user + '?json=true',
 		type: 'GET',
 		success : function (data) {
-			callback(data);
+			callback(null, data);
 		},
 		error : function (err) {
 			console.error(err);
+			callback(err);
 		}
 	};
 	$.ajax(obj);
@@ -237,6 +300,44 @@ users.layout = function (data) {
 	'use strict';
 	var onclick;
 	user.mode = true;
+};
+
+var login = function () {
+	'use strict';
+	bootbox.dialog({
+            title: "Login",
+            message: 
+            	'<div class="row">  ' +
+                	'<div class="col-md-12"> ' +
+                		'<form class="form-horizontal"> ' +
+                			'<div class="form-group col-md-8" style="margin: 0 auto;"> ' +
+                				'<label class="col-md-4 control-label" for="user">Username</label> ' +
+                				'<input id="user" name="user" type="text" placeholder="Username" class="form-control input-md"> ' +
+                				'<label class="col-md-4 control-label" for="pwstring">Password</label> ' +
+                				'<input id="pwstring" name="pwstring" type="password" placeholder="Password" class="form-control input-md"> ' +
+                			'</div> ' +
+                		'</form> </div> </div>',
+            buttons: {
+                success: {
+                    label: "Login",
+                    className: "btn-success",
+                    callback: function () {
+                    	var query = {
+                    		url : '/user/login?json=true',
+                    		type : 'POST',
+                    		data : {
+                    			user : $('#user').val(),
+                    			pwstring : $('#pwstring').val()
+                    		},
+                    		success : function () {},
+                    		error : function () {}
+                    	};
+                        $.ajax(query);
+                    }
+                }
+            }
+        }
+    );
 };
 
 
@@ -307,3 +408,5 @@ var Log = function (message) {
 	cons[0].scrollTop = cons[0].scrollHeight;
 	console.log(log);
 };
+
+$(document).ready(onload);
