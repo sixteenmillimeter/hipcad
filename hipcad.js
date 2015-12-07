@@ -91,7 +91,7 @@ controller.user.get = function (req, res) {
 		pageData = {},
 		tag,
 		recaptcha,
-		logOb = {
+		logObj = {
 			path : '/' + user,
 			tag : '',
 			status : 200,
