@@ -348,7 +348,11 @@ controller.logout = function (req, res) {
 
 controller.json = function (req) {
 	'use strict';
-	return (req.query && req.query.json && req.query.json === 'true');
+	var json = false;
+	if (req.query && req.query.json && req.query.json === 'true'){
+		json = true;
+	}
+	return json;
 };
 
 controller.auth = function (req, res, callback) {
