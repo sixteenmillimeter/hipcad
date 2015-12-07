@@ -85,9 +85,20 @@ controller.user.get = function (req, res) {
 		json = controller.json(req),
 		page,
 		pageData = {},
-		tag;
+		tag,
+		recaptcha;
 	var tagUserCb = function (req, res, t) {
 		tag = t;
+		controller.auth(req, res, authCb);
+	},
+	authCb = function (err, auth) {
+		if (auth) {
+			pageData.session = true;
+			pageData.username = req.session.token.username;
+		} else {
+			recaptcha = new Recaptcha(hipcad.cfg.RECAPTCHA_PUBLIC_KEY, hipcad.cfg.RECAPTCHA_PRIVATE_KEY);
+			pageData.recaptcha = encodeURIComponent(recaptcha.toHTML());
+		}
 		hipcad.users.exists(user, userExistsCb);
 	},
 	userExistsCb = function (uexists) {
@@ -134,15 +145,25 @@ controller.object.get = function (req, res) {
 		json = controller.json(req),
 		page,
 		pageData = {},
-		tag;
+		tag,
+		recaptcha;
 
 	var tagUserCb = function (req, res, tagOutput) {
 		tag = tagOutput;
-		hipcad.users.exists(user, userExistsCb);
+		controller.auth(req, res, authCb);
 	},
-	userExistsCb = function (uexists) {
-		if (uexists) {
-			console.log(user+ '/' + object);
+	authCb = function (err, auth) {
+		if (auth) {
+			pageData.session = true;
+			pageData.username = req.session.token.username;
+		} else {
+			recaptcha = new Recaptcha(hipcad.cfg.RECAPTCHA_PUBLIC_KEY, hipcad.cfg.RECAPTCHA_PRIVATE_KEY);
+			pageData.recaptcha = encodeURIComponent(recaptcha.toHTML());
+		}
+		hipcad.users.exists(user, objectsExistsCb);
+	},
+	objectsExistsCb = function (exists) {
+		if (exists) {
 			hipcad.objects.exists(user, object, objectsExistsCb);
 		} else {
 			hipcad.log.info(tag + ',404,/' + user + '/' + object, 'controller');
