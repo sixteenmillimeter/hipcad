@@ -116,9 +116,12 @@ menu.init = function () {
 	}
 	$('#menuNew').on('click', menu.newAction);
 	$('#menuOpen').on('click', menu.openAction);
+	$('#menuSave').on('click', menu.saveAction);
+	$('#menuHome').on('click', menu.homeAction);
 };
 menu.newAction = function () {
 	var str;
+	bootbox.hideAll();
 	if (menu.user) {
 		str = 'Name of new object';
 		bootbox.prompt(str, function (val) {
@@ -143,6 +146,23 @@ menu.openAction = function () {
 		document.location = '/' + pageData.username;
 	}
 };
+
+menu.saveAction = function () {
+	'use strict';
+	if (!pageData.session) {
+		return false;
+	}
+	var url = document.location.href,
+		slashes = url.split('/');
+	if (slashes.length === 1) {
+
+	}
+};
+
+menu.homeAction = function () {
+	'use strict';
+	return document.location = '/';
+}
 
 var include = {};
 include.store = {};

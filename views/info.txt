@@ -14,6 +14,9 @@ itself @
 
 https://hipcad.com/mmcwilliams/demo
 
-Try it out!
+Try it out in this editor!
+
+http://www.openscad.org/cheatsheet/
+(Note: hipcad.com is not 100% compatible with OpenSCAD)
 
 */
