@@ -180,7 +180,7 @@ controller.object.get = function (req, res) {
 			pageData.session = true;
 			pageData.username = req.session.token.username;
 
-			logData.username = req.session.token.username;
+			logObj.username = req.session.token.username;
 		} else {
 			recaptcha = new Recaptcha(hipcad.cfg.RECAPTCHA_PUBLIC_KEY, hipcad.cfg.RECAPTCHA_PRIVATE_KEY);
 			pageData.recaptcha = encodeURIComponent(recaptcha.toHTML());
