@@ -33,18 +33,25 @@ var onready= function () {
 	}
 
 	txt.height = window.innerHeight;
-	if (data !== null) {
-		if (typeof pageData.type !== 'undefined' 
-			&& (pageData.type === 'object'
-			|| pageData.type === 'user')
-		) {
-			cfg.readOnly = true;
-			console.log('Setting to readonly');
-		} else {
+	
+	if (typeof pageData.type !== 'undefined' 
+		&& (pageData.type === 'object'
+		|| pageData.type === 'user')
+	) {
+		cfg.readOnly = true;
+		console.log('Setting to readonly');
+	} else {
+		if (data !== null) {
 			txt.value = data;
 		}
 	}
 
+	if (pageData.owner 
+		&& pageData.owner.username === pageData.username 
+		&& pageData.type !== 'user') {
+		cfg.readOnly = false;
+	}
+	
 	editor = CodeMirror.fromTextArea(txt, cfg);
 	editor.setSize(undefined, txt.height);
 
@@ -52,7 +59,11 @@ var onready= function () {
 		&& (pageData.type === 'object'
 		|| pageData.type === 'user')
 		) {
-
+		if (pageData.owner 
+			&& pageData.owner.username === pageData.username 
+			&& pageData.type === 'object') { 
+			editor.on('change', onchange);
+		}
 	} else {
 		editor.on('change', onchange);
 	}
@@ -152,18 +163,27 @@ menu.saveAction = function () {
 	'use strict';
 	if (!pageData.session) {
 		return false;
+	} else {
+		if (pageData.owner && pageData.owner.username === pageData.username) {
+			save();
+		}
 	}
-	var url = document.location.href,
-		slashes = url.split('/');
-	if (slashes.length === 1) {
+};
 
-	}
+var save = function () {
+	var query = {
+		url : document.location.href,
+		type: 'PUT',
+		data : {
+			source: 
+		}
+	};
 };
 
 menu.homeAction = function () {
 	'use strict';
 	return document.location = '/';
-}
+};
 
 var include = {};
 include.store = {};

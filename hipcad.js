@@ -129,6 +129,9 @@ controller.user.get = function (req, res) {
 			return res.status(200).json(page);
 		} else {
 			pageData.type = 'user';
+			pageData.owner = {
+				username : user
+			}
 			data = data.map(function (elem) {
 				return elem.path;
 			});
@@ -289,6 +292,10 @@ controller.object.get = function (req, res) {
 			res.status(200).json({success: true, object: obj});
 		} else {
 			pageData.type = 'object';
+			pageData.owner = {
+				username : user,
+				object : object
+			}
 			page = {
 				pageData : JSON.stringify(pageData),
 				src: obj.src,
@@ -332,6 +339,8 @@ controller.object.create = function (req, res) {
 	},
 	objectsCreateCb = function (err, data) {
 		if (err) {
+			logObj.status = 500;
+			hipcad.log.warn('controller.object.create', logObj);
 			hipcad.log.error(err);
 			return controller.fail(res, 'Server error', 500, json);
 		}
@@ -348,7 +357,57 @@ controller.object.create = function (req, res) {
 	};
 	hipcad.tag(req, res, tagUserCb);
 };
-controller.object.update = function () {};
+controller.object.update = function (req, res) {
+	'use strict';
+	var tag,
+		json = controller.json(req),
+		username,
+		object,
+		source,
+		logObj = {},
+	tagUserCb = function (req, res, tagOutput) {
+		tag = tagOutput;
+		controller.auth(req, res, authCb);
+	},
+	authCb = function (err, auth) {
+		if (err) {
+			hipcad.log.error(err);
+			return controller.fail(res, 'Server error', 500, json);
+		}
+		username = req.params.user;
+		object = req.params.object;
+		source = req.body.source;
+
+		if (username !== req.session.token.username) {
+			hipcad.log.error('Unauthorized access attempt');
+			hipcad.log.error(req.params);
+			return controller.fail(res, 'Unauthorized Access', 403, json);
+		}
+
+		hipcad.objects.update(username, object, source, objectsUpdateCb);
+	},
+	objectsUpdateCb = function (err, data) {
+		if (err) {
+			logObj.status = 500;
+			hipcad.log.info('controller.object.update', logObj);
+			hipcad.log.error(err);
+			return controller.fail(res, 'Server error', 500, json);
+		}
+
+		logObj.tag = tag;
+		logObj.path = username + '/' + object;
+		logObj.username = username;
+		logObj.statusCode = 200;
+
+		hipcad.log.info('controller.object.update', logObj);
+		if (json) {
+			res.status(200).json({success: true});
+		} else {
+			res.redirect(username + '/' + object);
+		}
+	};
+	hipcad.tag(req, res, tagUserCb);
+};
 controller.object.destroy = function () {};
 
 controller.login = function (req, res) {
