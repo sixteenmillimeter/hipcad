@@ -16,7 +16,6 @@ var editor,
 
 var onready= function () {
 	'use strict'
-	console.trace();
 	var view = document.getElementById('viewport'),
 		txt = document.getElementById('code'),
 		data = localStorage.getItem('current'),
@@ -385,11 +384,15 @@ var login = function () {
                     			pwstring : $('#pwstring').val()
                     		},
                     		success : function () {
+                    			bootbox.hideAll();
                     			document.location = '/';
                     		},
-                    		error : function () {}
+                    		error : function () {
+                    			//handle error
+                    		}
                     	};
                         $.ajax(query);
+                        return false;
                     }
                 }
             }
@@ -437,6 +440,13 @@ var signup = function () {
                     label: "Sign up",
                     className: "btn-success",
                     callback: function () {
+
+                    	if ($('#signupEmail').val() === '') {
+                    		return false;
+                    	}
+
+
+
                     	var query = {
                     		url : '/user/create?json=true',
                     		type : 'POST',
@@ -448,6 +458,7 @@ var signup = function () {
                     			'g-recaptcha-response' : $('#g-recaptcha-response').val()
                     		},
                     		success : function () {
+                    			bootbox.hideAll();
                     			document.location = '/';
                     		},
                     		error : function (err) {
@@ -458,6 +469,7 @@ var signup = function () {
                     		}
                     	};
                         $.ajax(query);
+                        return false;
                     }
                 }
             }
