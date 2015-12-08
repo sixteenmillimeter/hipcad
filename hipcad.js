@@ -108,9 +108,6 @@ controller.user.get = function (req, res) {
 			pageData.username = req.session.token.username;
 
 			logObj.username = req.session.token.username;
-		} else {
-			recaptcha = new Recaptcha(hipcad.cfg.RECAPTCHA_PUBLIC_KEY, hipcad.cfg.RECAPTCHA_PRIVATE_KEY);
-			pageData.recaptcha = encodeURIComponent(recaptcha.toHTML());
 		}
 		hipcad.users.exists(user, userExistsCb);
 	},
@@ -206,7 +203,7 @@ controller.user.create = function (req, res) {
 	},
 	validateRecaptchaCb = function (err, valid) {
 		if (valid) {
-			hipca.log.info('controller.user.create', logObj);
+			hipcad.log.info('controller.user.create', logObj);
 			hipcad.users.create(username, email, pwstring, usersCreateCb);
 			if (json) {
 				res.status(200).json({success: true});
@@ -388,6 +385,7 @@ controller.login = function (req, res) {
 			hipcad.users.get(username, usersGetCb);
 		} else {
 			logObj.status = 401.1;
+			hipcad.log.warn('users.login callback success false');
 			hipcad.log.warn('controller.login', logObj);
 			controller.fail(res, 'User login failed', 401.1, json);
 		}
