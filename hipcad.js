@@ -1,6 +1,7 @@
 console.log('Starting hipcad.js...');
 
 var fs = require('fs'),
+	os = require('os'),
 	express = require('express'),
 	app = express(),
 	bodyParser = require('body-parser'),
@@ -410,7 +411,10 @@ hipcad.tmpl.assign('home', './views/index.html');
 hipcad.tmpl.assign('err', './views/err.html');
 hipcad.tmpl.assign('user', './views/user.html');
 
-app.use('/static', express.static(__dirname + '/static')); //for local dev
+if (os.platform().indexOf('darwin') !== -1) {
+	hipcad.log.info('Serving /static from node process on OSX');
+	app.use('/static', express.static(__dirname + '/static')); //for local dev
+}
 
 app.get('/robots.txt', function(req, res) {
 	'use strict';
