@@ -13,7 +13,7 @@ setTimeout(function () {
 			console.error('user.exists test failed');
 			console.trace();
 		}
-		users.available('static', testEmail, testPw, userAvailableTest);
+		users.available('static', userAvailableTest);
 	},
 	userAvailableTest = function (available) {
 		if (!available) {

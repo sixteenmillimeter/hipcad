@@ -11,6 +11,7 @@ apt-get install npm -y
 apt-get install nginx -y
 apt-get install openscad -y
 apt-get install apache2-utils -y
+apt-get install jq -y
 
 ln -s /usr/bin/nodejs /usr/bin/node
 mkdir /var/node

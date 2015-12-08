@@ -7,7 +7,6 @@ var fs = require('fs'),
 	bodyParser = require('body-parser'),
 	cookieParser = require('cookie-parser'),
 	expressSession = require('express-session'),
-	Recaptcha = require('recaptcha').Recaptcha,
 	//RedisStore = require('connect-redis')(expressSession),
 	FileStore = require('session-file-store')(expressSession)
     moment = require('moment'),
@@ -22,6 +21,7 @@ hipcad.objects = require('./lib/objects.js')(hipcad.cfg);
 hipcad.tmpl = require('./lib/templates.js')(hipcad.cfg);
 hipcad.mail = require('./lib/mail.js')(hipcad.cfg);
 hipcad.log = require('./lib/logger.js')(hipcad.cfg, 'app');
+hipcad.recaptcha = require('./lib/recaptcha.js');
 
 hipcad.init = function () {
 	'use strict';
@@ -64,9 +64,6 @@ controller.home = function (req, res) {
 		if (auth) {
 			pageData.session = true;
 			pageData.username = req.session.token.username;
-		} else {
-			recaptcha = new Recaptcha(hipcad.cfg.RECAPTCHA_PUBLIC_KEY, hipcad.cfg.RECAPTCHA_PRIVATE_KEY);
-			pageData.recaptcha = encodeURIComponent(recaptcha.toHTML());
 		}
 		page = {
 			src: hipcad.homePage, 
@@ -151,7 +148,85 @@ controller.user.get = function (req, res) {
 
 controller.user.create = function (req, res) {
 	'use strict';
+	var tag,
+		json = controller.json(req),
+		username,
+		email,
+		pwstring,
+		pwstring2,
+		source,
+		gcapRes,
+		ip,
+		logObj = {
+			tag: '',
+			path : '/user/create',
+			status: 200
+		},
+	tagUserCb = function (req, res, tagOutput) {
+		tag = tagOutput;
+		logObj.tag = tag;
+		//controller.auth(req, req, authCb);
 
+		if (req.body
+			&&req.body.username
+			&& req.body.pwstring
+			&& req.body.pwstring2
+			&& req.body.email
+			&& req.body['g-recaptcha-response']
+			&& req.body['g-recaptcha-response'].length !== 0
+			&& req.connection.remoteAddress || req.headers['x-real-ip']) {
+			
+			username = req.body.username;
+			pwstring = req.body.pwstring;
+			pwstring2 = req.body.pwstring2;
+			email = req.body.email;
+
+			gcapRes = req.body['g-recaptcha-response'];
+			ip = req.connection.remoteAddress || req.headers['x-real-ip'];
+
+			hipcad.users.validateInfo(username, email, pwstring, pwstring2, validateInfoCb);
+		} else {
+			logObj.status = 400;
+			hipcad.log.warn('controller.user.create', logObj);
+			return controller.fail(res, 'Invalid request', 400, json);
+		}
+	},
+	validateInfoCb = function (err, valid) {
+		if (valid) {
+			//validate captcha
+		    hipcad.recaptcha.verify(hipcad.cfg.RECAPTCHA_PRIVATE_KEY, gcapRes, ip, validateRecaptchaCb);
+			//validateRecaptchaCb(null, true);
+		} else {
+			logObj.status = 400;
+			logObj.err = err;
+			logObj.username = username;
+			hipcad.log.warn('controller.user.create', logObj);
+			return controller.fail(res, err, 400, json); //use this to trigger UI events
+		}
+	},
+	validateRecaptchaCb = function (err, valid) {
+		if (valid) {
+			hipca.log.info('controller.user.create', logObj);
+			hipcad.users.create(username, email, pwstring, usersCreateCb);
+			if (json) {
+				res.status(200).json({success: true});
+			} else {
+				res.redirect('/#login');
+			}
+		} else {
+			logObj.status = 400;
+			logObj.err = {item: 'recaptcha'};
+			logObj.username = username;
+			hipcad.log.warn('controller.user.create', logObj);
+			return controller.fail(res, err, 400, json);
+		}
+	},
+	usersCreateCb = function (err, userObj) {
+		if (err) {
+
+		}
+	};
+	hipcad.tag(req, res, tagUserCb);
 };
 
 controller.object = {};
@@ -182,11 +257,8 @@ controller.object.get = function (req, res) {
 			pageData.username = req.session.token.username;
 
 			logObj.username = req.session.token.username;
-		} else {
-			recaptcha = new Recaptcha(hipcad.cfg.RECAPTCHA_PUBLIC_KEY, hipcad.cfg.RECAPTCHA_PRIVATE_KEY);
-			pageData.recaptcha = encodeURIComponent(recaptcha.toHTML());
 		}
-		hipcad.users.exists(user, objectsExistsCb);
+		hipcad.objects.exists(user, object, objectsExistsCb);
 	},
 	objectsExistsCb = function (exists) {
 		if (exists) {
@@ -198,7 +270,7 @@ controller.object.get = function (req, res) {
 		}
 	},
 	objectsExistsCb = function (oexists) {
-		if (oexists) {
+		if (oexists === true) {
 			hipcad.objects.get(user, object, objectsGetCb);
 		} else {
 			logObj.status = 404;
@@ -207,7 +279,12 @@ controller.object.get = function (req, res) {
 		}
 	},
 	objectsGetCb = function (err, obj) {
-		//TODO: handle err
+		if (err) {
+			logObj.status = 500;
+			hipcad.log.error(err);
+			hipcad.log.warn('controller.object.get', logObj);
+			return controller.fail(res, 'Server error.', 500, json);
+		}
 		if (json) {
 			hipcad.log.info('controller.object.get', logObj);
 			delete obj.id;
@@ -236,7 +313,7 @@ controller.object.create = function (req, res) {
 		logObj = {},
 	tagUserCb = function (req, res, tagOutput) {
 		tag = tagOutput;
-		controller.auth(req, req, authCb);
+		controller.auth(req, res, authCb);
 	},
 	authCb = function (err, auth) {
 		if (err) {
@@ -305,14 +382,14 @@ controller.login = function (req, res) {
 			logObj.status = 401.1;
 			hipcad.log.warn('controller.login', logObj);
 			hipcad.log.error(err);
-			return controller.fail('User login failed', 401.1, true);
+			return controller.fail(res, 'User login failed', 401.1, json);
 		}
 		if (success) {
 			hipcad.users.get(username, usersGetCb);
 		} else {
 			logObj.status = 401.1;
 			hipcad.log.warn('controller.login', logObj);
-			controller.fail('User login failed', 401.1, true);
+			controller.fail(res, 'User login failed', 401.1, json);
 		}
 	},
 	usersGetCb = function (err, body) {
@@ -322,7 +399,7 @@ controller.login = function (req, res) {
 			logObj.status = 401.1;
 			hipcad.log.warn('controller.login', logObj);
 			hipcad.log.error(err);
-			return controller.fail('User login failed', 401.1, true);
+			return controller.fail(res, 'User login failed', 401.1, json);
 		}
 		tokenObj = {
 			id : uuid.v4(),
@@ -424,24 +501,18 @@ app.get('/robots.txt', function(req, res) {
 
 app.get('/', controller.home);
 
-//app.get('/static/'); -> being reserved by nginx
 app.post('/user/login', controller.login);
 app.post('/user/logout', controller.logout);
 app.get('/user/logout', controller.logout);
 
-app.post('/user/create');
-
-//app.post('/object/create/:user/:object');
-//app.post('/object/update/:user/:object');
-//app.post('/object/delete/:user/:object');
+app.post('/user/create', controller.user.create);
 
 app.get('/:user', controller.user.get);
-//app.post('/:user');
-//app.put('/:user');
-//app.delete('/:user');
+//app.put('/:user', controller.user.update);
+//app.delete('/:user', controller.user.update);
 
 app.get('/:user/:object', controller.object.get);
-//app.get('/:user/:object/:rev', controller.revision);
+//app.get('/:user/:object/:rev', controller.object.getRevision);
 app.post('/:user/:object', controller.object.create);
 app.put('/:user/:object', controller.object.update);
 app.delete('/:user/:object', controller.object.destroy);

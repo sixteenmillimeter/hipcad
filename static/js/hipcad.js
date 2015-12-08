@@ -14,8 +14,9 @@ var editor,
 	viewer,
 	gProcessor;
 
-var onload = function () {
+var onready= function () {
 	'use strict'
+	console.trace();
 	var view = document.getElementById('viewport'),
 		txt = document.getElementById('code'),
 		data = localStorage.getItem('current'),
@@ -82,9 +83,10 @@ var hashAction = function () {
 var onchange = function (cm, change) {
 	//console.log(cm);
 	//console.log(change);
-	var body = editor.getValue(),
-		line = editor.getLine(change.to.line),
-		cha = change.to.ch;
+	var body = editor.getValue();//,
+		//lineno = change.to.line || 0,
+		//line = editor.getLine(lineno),
+		//cha = change.to.ch || 0;
 	if (!users.mode) {
 		localStorage.setItem('current', body);
 		//includes
@@ -220,7 +222,9 @@ include.parse = function (a) {
 			&& elem.indexOf('<') !== -1
 			&& elem.indexOf('>') !== -1
 			&& elem.indexOf(';') !== -1) {
-				return elem;
+				if (elem.split('<')[1].indexOf('/') !== -1){
+					return elem;
+				}
 			}
 		}); 
 	return inc;
@@ -419,13 +423,12 @@ var signup = function () {
                 	'<div class="col-md-12"> ' +
                 		'<form class="form-horizontal" id="signup"> ' +
                 			'<div class="form-group col-md-8" style="margin: 0 auto; float: none;"> ' +
-                			 '<input id="email" name="email" type="text" placeholder="Email address" class="form-control input-md" style="margin-bottom: 20px;"> ' +
-                				'<input id="user" name="user" type="text" placeholder="Username" class="form-control input-md" style="margin-bottom: 20px;"> ' +
-                				'<input id="pwstring" name="pwstring" type="password" placeholder="Password" class="form-control input-md" style="margin-bottom: 20px;"> ' +
-                				'<input id="pwstring2" name="pwstring2" type="password" placeholder="Password again" class="form-control input-md" style="margin-bottom: 20px;"> ' +
-                				'<div id="recaptchaWrapper">' +
-                				recaptcha + 
-                				'</div>' +
+                			 '<input id="signupEmail" name="email" type="text" placeholder="Email address" class="form-control input-md" style="margin-bottom: 20px;"> ' +
+                				'<input id="signupUser" name="signupUser" type="text" placeholder="Username" class="form-control input-md" style="margin-bottom: 20px;"> ' +
+                				'<input id="signupPwstring" name="pwstring" type="password" placeholder="Password" class="form-control input-md" style="margin-bottom: 20px;"> ' +
+                				'<input id="signupPwstring2" name="signupPwstring2" type="password" placeholder="Password again" class="form-control input-md" style="margin-bottom: 20px;"> ' +
+                				'<script src="https://www.google.com/recaptcha/api.js"></script>' +
+                				'<div class="g-recaptcha" data-sitekey="6Le-iRITAAAAALw-YpT23U8-SSD5DGZnUOSukorI"></div>' + 
                 				'<div id="loginLink">Already have an account? <a href="#login">Login</a>' +
                 			'</div> ' +
                 		'</form> </div> </div>',
@@ -435,16 +438,24 @@ var signup = function () {
                     className: "btn-success",
                     callback: function () {
                     	var query = {
-                    		url : '/user/login?json=true',
+                    		url : '/user/create?json=true',
                     		type : 'POST',
                     		data : {
-                    			user : $('#user').val(),
-                    			pwstring : $('#pwstring').val()
+                    			email : $('#signupEmail').val(),
+                    			username : $('#signupUser').val(),
+                    			pwstring : $('#signupPwstring').val(),
+                    			pwstring2 : $('#signupPwstring2').val(),
+                    			'g-recaptcha-response' : $('#g-recaptcha-response').val()
                     		},
                     		success : function () {
                     			document.location = '/';
                     		},
-                    		error : function () {}
+                    		error : function (err) {
+                    			if (err) {
+                    				console.log(err.item);
+                    				console.log(err.msg);
+                    			}
+                    		}
                     	};
                         $.ajax(query);
                     }
@@ -525,4 +536,4 @@ var Log = function (message) {
 	console.log(message);
 };
 
-$(document).ready(onload);
+$(document).ready(onready);
