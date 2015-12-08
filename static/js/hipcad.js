@@ -40,6 +40,8 @@ var onready= function () {
 	) {
 		cfg.readOnly = true;
 		console.log('Setting to readonly');
+		$('#menuSave').attr('disabled', 'disabled');
+		$('#menuClear').attr('disabled', 'disabled');
 	} else {
 		if (data !== null) {
 			txt.value = data;
@@ -117,6 +119,23 @@ var isEditing = function (line, char) {
 	return area;
 };
 
+var save = function () {
+	var query = {
+		url : document.location.href + '?json=true',
+		type: 'PUT',
+		data : {
+			source: editor.getValue()
+		},
+		success : function (data) {
+			console.log(data);
+		},
+		error : function (err) {
+			console.log(err);
+		}
+	};
+	$.ajax(query);
+};
+
 var menu = {};
 menu.user = false;
 menu.init = function () {
@@ -164,20 +183,12 @@ menu.saveAction = function () {
 	if (!pageData.session) {
 		return false;
 	} else {
-		if (pageData.owner && pageData.owner.username === pageData.username) {
+		if (pageData.owner 
+			&& pageData.owner.username === pageData.username
+			&& pageData.type !== 'user') {
 			save();
 		}
 	}
-};
-
-var save = function () {
-	var query = {
-		url : document.location.href,
-		type: 'PUT',
-		data : {
-			source: 
-		}
-	};
 };
 
 menu.homeAction = function () {
@@ -345,6 +356,7 @@ objects.create = function (path, source, callback) {
 		},
 		success : function (data) {
 			console.dir(data);
+			document.location = path;
 		}, 
 		error : function (err) {
 			console.error(err);
