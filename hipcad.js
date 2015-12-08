@@ -204,6 +204,7 @@ controller.user.create = function (req, res) {
 	validateRecaptchaCb = function (err, valid) {
 		if (valid) {
 			hipcad.log.info('controller.user.create', logObj);
+			hipcad.mail.send(username, email, 'Welcome to hipcad.com!', 'Thanks for signing up for hipcad. Please feel free to email us with comments or questions.', null);
 			hipcad.users.create(username, email, pwstring, usersCreateCb);
 			if (json) {
 				res.status(200).json({success: true});
