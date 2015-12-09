@@ -18,6 +18,7 @@ mkdir /var/node
 mkdir /var/log/hipcad
 mkdir /var/cfg
 mkdir /var/cfg/hipcad.com
+mkdir /tmp/hipcad
 
 cd /var/node
 git clone https://litter@bitbucket.org/litter/hipcad.git
