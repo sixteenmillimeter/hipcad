@@ -13,9 +13,6 @@
 		<!-- Latest compiled and minified CSS -->
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 
-		<!-- Optional theme -->
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
-
 	</head>
 	<body style="height: 100%; width: 100%;">
 		<ul class="menu">
@@ -24,8 +21,13 @@
 			<li id="menuSave" disabled>Save</li>
 			<li id="menuOpen" disabled>Open</li>
 			<li id="menuClear" disabled>Clear</li>
+<<<<<<< HEAD
 			<li id="menuUserAction" onclick="login();">Login</li>
+		</ul>
+=======
+			<li id="menuUserAction" onclick="document.location.hash = '#login'">Login</li>
 		</ul> 
+>>>>>>> origin/master
 		<textarea id="code" name="code">{{src}}</textarea>
 		<div class="divider"></div>
 		<div id="viewer"></div>
@@ -56,14 +58,16 @@
 		<script src="/static/js/underscore.js"></script>
 		<script src="/static/js/openscad-openjscad-translator.js"></script>
 		<script src="/static/js/bootbox.min.js"></script>
+		<script src="/static/js/includes.js"></script>
 		<script src="/static/js/hipcad.js"></script>
 		<!-- Latest compiled and minified JavaScript -->
+		<!--<script src="/static/js/app.min.js"></script>-->
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 		<script id="conversionWorker" type="javascript/worker">
-		self.onmessage = function(e) {      
+		self.onmessage = function(e) {
 			// Worker to import STL/OBJ as it can take quite some while for 1MB+ large STLs
 		   var data = e.data; // JSON.parse(e.data);
-		   me = data.me;     // required for openscad.js parse*() 
+		   me = data.me;     // required for openscad.js parse*()
 		   version = data.version;          //     ''               ''
 
 		   if (data.url) {     // RANT: why do something simple, when it can be done complicate: Workers & importScripts() (guys!!)
