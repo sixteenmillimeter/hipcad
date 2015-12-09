@@ -6,16 +6,17 @@ Wecome to hipcad!
 
 Use hypertext to script objects in OpenSCAD.
 
-The first line in this script embeds the OpenSCAD 
-script "demo" by user "mmcwilliams" into your 
-working script. Remove it by commenting out or 
-deleting the line. You can view the file by itself @
-
+The include statement at the top embeds "demo" 
+by user "mmcwilliams" into the working script. 
+Remove it by commenting out or deleting the 
+line. You can view the file by itself:
 https://hipcad.com/mmcwilliams/demo
 
-Start writing OpenSCAD in this editor!
-
+Start writing OpenSCAD* in this editor!
 http://www.openscad.org/cheatsheet/
-(Note: hipcad.com is not 100% compatible with OpenSCAD)
+
+* hipcad.com is not 100% compatible with OpenSCAD
+
+See also:
 
 */
