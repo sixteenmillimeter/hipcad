@@ -33,7 +33,8 @@ var onready= function () {
 	}
 
 	txt.height = window.innerHeight;
-	if (typeof pageData.type !== 'undefined' 
+	
+	if (typeof pageData.type !== 'undefined'
 		&& (pageData.type === 'object'
 		|| pageData.type === 'user')
 	) {
@@ -47,12 +48,12 @@ var onready= function () {
 		}
 	}
 
-	if (pageData.owner 
-		&& pageData.owner.username === pageData.username 
+	if (pageData.owner
+		&& pageData.owner.username === pageData.username
 		&& pageData.type !== 'user') {
 		cfg.readOnly = false;
 	}
-	
+
 	editor = CodeMirror.fromTextArea(txt, cfg);
 	editor.setSize(undefined, txt.height);
 
@@ -60,9 +61,9 @@ var onready= function () {
 		&& (pageData.type === 'object'
 		|| pageData.type === 'user')
 		) {
-		if (pageData.owner 
-			&& pageData.owner.username === pageData.username 
-			&& pageData.type === 'object') { 
+		if (pageData.owner
+			&& pageData.owner.username === pageData.username
+			&& pageData.type === 'object') {
 			editor.on('change', onchange);
 		}
 	} else {
@@ -182,7 +183,7 @@ menu.saveAction = function () {
 	if (!pageData.session) {
 		return false;
 	} else {
-		if (pageData.owner 
+		if (pageData.owner
 			&& pageData.owner.username === pageData.username
 			&& pageData.type !== 'user') {
 			save();
@@ -241,7 +242,7 @@ include.process = function (source, callback) {
 		};
 	next();
 };
-	
+
 include.parse = function (a) {
 	'use strict';
 	var lines = a.split('\n'),
@@ -255,7 +256,7 @@ include.parse = function (a) {
 					return elem;
 				}
 			}
-		}); 
+		});
 	return inc;
 };
 
@@ -356,7 +357,7 @@ objects.create = function (path, source, callback) {
 		success : function (data) {
 			console.dir(data);
 			document.location = path;
-		}, 
+		},
 		error : function (err) {
 			console.error(err);
 		}
@@ -462,7 +463,7 @@ var signup = function () {
                 				'<input id="signupPwstring" name="pwstring" type="password" placeholder="Password" class="form-control input-md" style="margin-bottom: 20px;"> ' +
                 				'<input id="signupPwstring2" name="signupPwstring2" type="password" placeholder="Password again" class="form-control input-md" style="margin-bottom: 20px;"> ' +
                 				'<script src="https://www.google.com/recaptcha/api.js"></script>' +
-                				'<div class="g-recaptcha" data-sitekey="6Le-iRITAAAAALw-YpT23U8-SSD5DGZnUOSukorI"></div>' + 
+                				'<div class="g-recaptcha" data-sitekey="6Le-iRITAAAAALw-YpT23U8-SSD5DGZnUOSukorI"></div>' +
                 				'<div id="loginLink">Already have an account? <a href="#login">Login</a>' +
                 			'</div> ' +
                 		'</form> </div> </div>',
