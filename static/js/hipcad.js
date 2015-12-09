@@ -14,7 +14,7 @@ var editor,
 	viewer,
 	gProcessor;
 
-var onload = function () {
+var onready= function () {
 	'use strict'
 	var view = document.getElementById('viewport'),
 		txt = document.getElementById('code'),
@@ -33,30 +33,42 @@ var onload = function () {
 	}
 
 	txt.height = window.innerHeight;
-	if (data !== null) {
-		if (typeof pageData.type !== 'undefined' 
-			&& (pageData.type === 'object'
-			|| pageData.type === 'user')
-		) {
-			cfg.readOnly = true;
-			console.log('Setting to readonly');
-		} else {
+	if (typeof pageData.type !== 'undefined' 
+		&& (pageData.type === 'object'
+		|| pageData.type === 'user')
+	) {
+		cfg.readOnly = true;
+		console.log('Setting to readonly');
+		$('#menuSave').attr('disabled', 'disabled');
+		$('#menuClear').attr('disabled', 'disabled');
+	} else {
+		if (data !== null) {
 			txt.value = data;
 		}
 	}
 
+	if (pageData.owner 
+		&& pageData.owner.username === pageData.username 
+		&& pageData.type !== 'user') {
+		cfg.readOnly = false;
+	}
+	
 	editor = CodeMirror.fromTextArea(txt, cfg);
 	editor.setSize(undefined, txt.height);
 
-	if (typeof pageData.type !== 'undefined' 
+	if (typeof pageData.type !== 'undefined'
 		&& (pageData.type === 'object'
 		|| pageData.type === 'user')
 		) {
-
+		if (pageData.owner 
+			&& pageData.owner.username === pageData.username 
+			&& pageData.type === 'object') { 
+			editor.on('change', onchange);
+		}
 	} else {
 		editor.on('change', onchange);
 	}
-	
+
 	menu.init();
 
 	$(window).on('hashchange', hashAction);
@@ -82,9 +94,10 @@ var hashAction = function () {
 var onchange = function (cm, change) {
 	//console.log(cm);
 	//console.log(change);
-	var body = editor.getValue(),
-		line = editor.getLine(change.to.line),
-		cha = change.to.ch;
+	var body = editor.getValue();//,
+		//lineno = change.to.line || 0,
+		//line = editor.getLine(lineno),
+		//cha = change.to.ch || 0;
 	if (!users.mode) {
 		localStorage.setItem('current', body);
 		//includes
@@ -103,6 +116,23 @@ var isEditing = function (line, char) {
 		}
 	}
 	return area;
+};
+
+var save = function () {
+	var query = {
+		url : document.location.href + '?json=true',
+		type: 'PUT',
+		data : {
+			source: editor.getValue()
+		},
+		success : function (data) {
+			console.log(data);
+		},
+		error : function (err) {
+			console.log(err);
+		}
+	};
+	$.ajax(query);
 };
 
 var menu = {};
@@ -151,18 +181,19 @@ menu.saveAction = function () {
 	'use strict';
 	if (!pageData.session) {
 		return false;
-	}
-	var url = document.location.href,
-		slashes = url.split('/');
-	if (slashes.length === 1) {
-
+	} else {
+		if (pageData.owner 
+			&& pageData.owner.username === pageData.username
+			&& pageData.type !== 'user') {
+			save();
+		}
 	}
 };
 
 menu.homeAction = function () {
 	'use strict';
 	return document.location = '/';
-}
+};
 
 var include = {};
 include.store = {};
@@ -220,7 +251,9 @@ include.parse = function (a) {
 			&& elem.indexOf('<') !== -1
 			&& elem.indexOf('>') !== -1
 			&& elem.indexOf(';') !== -1) {
-				return elem;
+				if (elem.split('<')[1].indexOf('/') !== -1){
+					return elem;
+				}
 			}
 		}); 
 	return inc;
@@ -259,7 +292,7 @@ include.get = function (cleanPath, callback) {
 		console.dir(res);
 		include.store[cleanPath] = res;
 		callback(res);
-	})
+	});
 };
 
 var objects = {};
@@ -322,6 +355,7 @@ objects.create = function (path, source, callback) {
 		},
 		success : function (data) {
 			console.dir(data);
+			document.location = path;
 		}, 
 		error : function (err) {
 			console.error(err);
@@ -358,7 +392,7 @@ var login = function () {
 	'use strict';
 	bootbox.dialog({
             title: "Login",
-            message: 
+            message:
             	'<div class="row">  ' +
                 	'<div class="col-md-12"> ' +
                 		'<form class="form-horizontal" id="login"> ' +
@@ -381,11 +415,15 @@ var login = function () {
                     			pwstring : $('#pwstring').val()
                     		},
                     		success : function () {
+                    			bootbox.hideAll();
                     			document.location = '/';
                     		},
-                    		error : function () {}
+                    		error : function () {
+                    			//handle error
+                    		}
                     	};
                         $.ajax(query);
+                        return false;
                     }
                 }
             }
@@ -414,18 +452,17 @@ var signup = function () {
 	}
 	bootbox.dialog({
             title: "Create an account",
-            message: 
+            message:
             	'<div class="row">  ' +
                 	'<div class="col-md-12"> ' +
                 		'<form class="form-horizontal" id="signup"> ' +
                 			'<div class="form-group col-md-8" style="margin: 0 auto; float: none;"> ' +
-                			 '<input id="email" name="email" type="text" placeholder="Email address" class="form-control input-md" style="margin-bottom: 20px;"> ' +
-                				'<input id="user" name="user" type="text" placeholder="Username" class="form-control input-md" style="margin-bottom: 20px;"> ' +
-                				'<input id="pwstring" name="pwstring" type="password" placeholder="Password" class="form-control input-md" style="margin-bottom: 20px;"> ' +
-                				'<input id="pwstring2" name="pwstring2" type="password" placeholder="Password again" class="form-control input-md" style="margin-bottom: 20px;"> ' +
-                				'<div id="recaptchaWrapper">' +
-                				recaptcha + 
-                				'</div>' +
+                			 '<input id="signupEmail" name="email" type="text" placeholder="Email address" class="form-control input-md" style="margin-bottom: 20px;"> ' +
+                				'<input id="signupUser" name="signupUser" type="text" placeholder="Username" class="form-control input-md" style="margin-bottom: 20px;"> ' +
+                				'<input id="signupPwstring" name="pwstring" type="password" placeholder="Password" class="form-control input-md" style="margin-bottom: 20px;"> ' +
+                				'<input id="signupPwstring2" name="signupPwstring2" type="password" placeholder="Password again" class="form-control input-md" style="margin-bottom: 20px;"> ' +
+                				'<script src="https://www.google.com/recaptcha/api.js"></script>' +
+                				'<div class="g-recaptcha" data-sitekey="6Le-iRITAAAAALw-YpT23U8-SSD5DGZnUOSukorI"></div>' + 
                 				'<div id="loginLink">Already have an account? <a href="#login">Login</a>' +
                 			'</div> ' +
                 		'</form> </div> </div>',
@@ -434,19 +471,36 @@ var signup = function () {
                     label: "Sign up",
                     className: "btn-success",
                     callback: function () {
+
+                    	if ($('#signupEmail').val() === '') {
+                    		return false;
+                    	}
+
+
+
                     	var query = {
-                    		url : '/user/login?json=true',
+                    		url : '/user/create?json=true',
                     		type : 'POST',
                     		data : {
-                    			user : $('#user').val(),
-                    			pwstring : $('#pwstring').val()
+                    			email : $('#signupEmail').val(),
+                    			username : $('#signupUser').val(),
+                    			pwstring : $('#signupPwstring').val(),
+                    			pwstring2 : $('#signupPwstring2').val(),
+                    			'g-recaptcha-response' : $('#g-recaptcha-response').val()
                     		},
                     		success : function () {
+                    			bootbox.hideAll();
                     			document.location = '/';
                     		},
-                    		error : function () {}
+                    		error : function (err) {
+                    			if (err) {
+                    				console.log(err.item);
+                    				console.log(err.msg);
+                    			}
+                    		}
                     	};
                         $.ajax(query);
+                        return false;
                     }
                 }
             }
@@ -525,4 +579,4 @@ var Log = function (message) {
 	console.log(message);
 };
 
-$(document).ready(onload);
+$(document).ready(onready);
