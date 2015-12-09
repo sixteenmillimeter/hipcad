@@ -21,7 +21,8 @@ hipcad.objects = require('./lib/objects.js')(hipcad.cfg);
 hipcad.tmpl = require('./lib/templates.js')(hipcad.cfg);
 hipcad.mail = require('./lib/mail.js')(hipcad.cfg);
 hipcad.log = require('./lib/logger.js')(hipcad.cfg, 'app');
-hipcad.recaptcha = require('./lib/recaptcha.js');
+hipcad.recaptcha = require('./lib/recaptcha.js')(hipcad.cfg);
+hipcad.openscad = require('./lib/openscad.js')(hipcad.cfg);
 
 hipcad.init = function () {
 	'use strict';
@@ -193,7 +194,7 @@ controller.user.create = function (req, res) {
 	},
 	validateInfoCb = function (err, valid) {
 		if (valid) {
-		    hipcad.recaptcha.verify(hipcad.cfg.RECAPTCHA_PRIVATE_KEY, gcapRes, ip, validateRecaptchaCb);
+		    hipcad.recaptcha.verify(gcapRes, ip, validateRecaptchaCb);
 		} else {
 			logObj.status = 400;
 			logObj.err = err;
@@ -215,9 +216,9 @@ controller.user.create = function (req, res) {
 	},
 	usersCreateCb = function (err, userObj) {
 		if (err) {
-			logObj.status = 400;
+			logObj.status = 500;
 			hipcad.log.warn('controller.user.create', logObj);
-			return controller.fail(res, 'Error creating user', 400, json);
+			return controller.fail(res, 'Error creating user', 500, json);
 		}
 		hipcad.log.info('controller.user.create', logObj);
 		hipcad.mail.send(username, email, 'Welcome to hipcad.com!', 'Thanks for signing up for hipcad. Please feel free to email us with comments or questions.', null);
