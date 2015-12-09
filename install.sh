@@ -15,6 +15,10 @@ apt-get install jq -y
 
 ln -s /usr/bin/nodejs /usr/bin/node
 mkdir /var/node
+mkdir /var/log/hipcad
+mkdir /var/cfg
+mkdir /var/cfg/hipcad.com
+
 cd /var/node
 git clone https://litter@bitbucket.org/litter/hipcad.git
 cd hipcad
