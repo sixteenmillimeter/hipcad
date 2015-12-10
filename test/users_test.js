@@ -22,7 +22,7 @@ setTimeout(function () {
 			console.error('user.available test failed');
 			console.trace();
 		}
-		users.available(testUser, testEmail, testPw, userAvailableTest2);
+		users.available(testUser, userAvailableTest2);
 	},
 	userAvailableTest2 = function (available) {
 		if (available) {

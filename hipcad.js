@@ -194,13 +194,24 @@ controller.user.create = function (req, res) {
 	},
 	validateInfoCb = function (err, valid) {
 		if (valid) {
-		    hipcad.recaptcha.verify(gcapRes, ip, validateRecaptchaCb);
+			hipcad.users.uniqueEmail(email, validateEmailCb);
 		} else {
 			logObj.status = 400;
 			logObj.err = err;
 			logObj.username = username;
 			hipcad.log.warn('controller.user.create', logObj);
 			return controller.fail(res, err, 400, json); //use this to trigger UI events
+		}
+	},
+	validateEmailCb = function (err, valid) {
+		if (valid) {
+			 hipcad.recaptcha.verify(gcapRes, ip, validateRecaptchaCb);
+		} else {
+			logObj.status = 400;
+			logObj.err = {item: 'email', msg: 'Email is currently in use'};
+			logObj.username = username;
+			hipcad.log.warn('controller.user.create', logObj);
+			return controller.fail(res, err, 400, json);
 		}
 	},
 	validateRecaptchaCb = function (err, valid) {
