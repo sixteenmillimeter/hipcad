@@ -7,7 +7,7 @@ var fs = require('fs'),
 	bodyParser = require('body-parser'),
 	cookieParser = require('cookie-parser'),
 	expressSession = require('express-session'),
-	//RedisStore = require('connect-redis')(expressSession),
+	RedisStore = require('connect-redis')(expressSession),
 	FileStore = require('session-file-store')(expressSession)
     moment = require('moment'),
     path = require('path'),
@@ -543,8 +543,12 @@ controller.auth = function (req, res, callback) {
 
 app.use(cookieParser(hipcad.cfg.cookie_secret));
 app.use(expressSession({
-	//store: new RedisStore(options),
-	store: new FileStore(),
+	store: new RedisStore({
+    	host: hipcad.cfg.redis_url,
+    	pass: '',
+    	port: hipcad.cfg.redis_port
+  	}),
+	//store: new FileStore(),
 	secret: hipcad.cfg.session_secret,
 	saveUninitialized: true,
 	resave: true,
