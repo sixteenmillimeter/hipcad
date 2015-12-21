@@ -13,6 +13,7 @@ Features
 --------
 
 - Create and save scripts
+- Hyperlink to other scripts
 
 Installation
 ------------
