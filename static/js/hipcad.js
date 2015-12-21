@@ -52,6 +52,8 @@ var onready= function () {
 		&& pageData.owner.username === pageData.username
 		&& pageData.type !== 'user') {
 		cfg.readOnly = false;
+		$('#menuSave').attr('disabled', null);
+		$('#menuClear').attr('disabled', null);
 	}
 
 	editor = CodeMirror.fromTextArea(txt, cfg);
