@@ -12,6 +12,7 @@ apt-get install nginx -y
 apt-get install openscad -y
 apt-get install apache2-utils -y
 apt-get install jq -y
+apt-get install couchdb redis-server -y
 
 ln -s /usr/bin/nodejs /usr/bin/node
 mkdir /var/node
@@ -23,5 +24,5 @@ mkdir /tmp/hipcad
 cd /var/node
 git clone https://litter@bitbucket.org/litter/hipcad.git
 cd hipcad
-npm install -g forever gulp
+npm install -g pm2 gulp
 npm install
