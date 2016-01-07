@@ -67,7 +67,7 @@ controller.home = function (req, res) {
 			pageData.username = req.session.token.username;
 		}
 		page = {
-			src: hipcad.homePage, 
+			src: hipcad.homePage,
 			pageData: JSON.stringify(pageData),
 			title : ''
 		};
@@ -176,7 +176,7 @@ controller.user.create = function (req, res) {
 			&& req.body['g-recaptcha-response']
 			&& req.body['g-recaptcha-response'].length !== 0
 			&& req.connection.remoteAddress || req.headers['x-real-ip']) {
-			
+
 			username = req.body.username;
 			pwstring = req.body.pwstring;
 			pwstring2 = req.body.pwstring2;
@@ -422,10 +422,104 @@ controller.object.update = function (req, res) {
 };
 controller.object.destroy = function () {};
 
+controller.object.render = function (req, res) {
+	'use strict';
+	var user = req.params.user,
+		object = req.params.object,
+		json = controller.json(req),
+		page,
+		pageData = {},
+		tag,
+		recaptcha,
+		logObj = {
+			path : '/' + user + '/' + object,
+			tag : '',
+			status : 200,
+			json : json
+		},
+
+	tagUserCb = function (req, res, tagOutput) {
+		tag = tagOutput;
+		logObj.tag = tag;
+		controller.auth(req, res, authCb);
+	},
+	authCb = function (err, auth) {
+		if (auth) {
+			logObj.username = req.session.token.username;
+		} else {
+			logObj.status = 401;
+			hipcad.log.warn('controller.object.render', logObj);
+			return controller.fail(res, 'Not logged in.', 401, json);
+		}
+
+		if (user !== req.session.token.username) {
+			logObj.status = 401;
+			hipcad.log.warn('controller.object.render', logObj);
+			return controller.fail(res, 'Unauthorized.', 401, json);
+		}
+
+		hipcad.objects.exists(user, object, objectsExistsCb);
+	},
+	objectsExistsCb = function (exists) {
+		if (exists) {
+			hipcad.objects.exists(user, object, objectsExistsCb);
+		} else {
+			logObj.status = 404;
+			hipcad.log.warn('controller.object.render', logObj);
+			controller.fail(res, 'Page not found.', 404, json);
+		}
+	},
+	objectsExistsCb = function (oexists) {
+		if (oexists === true) {
+			hipcad.objects.get(user, object, objectsGetCb);
+		} else {
+			logObj.status = 404;
+			hipcad.log.warn('controller.object.render', logObj);
+			controller.fail(res, 'Page not found.', 404, json);
+		}
+	},
+	objectsGetCb = function (err, obj) {
+		if (err) {
+			logObj.status = 500;
+			hipcad.log.error(err);
+			hipcad.log.warn('controller.object.render', logObj);
+			return controller.fail(res, 'Server error.', 500, json);
+		}
+		hipcad.openscad.service(user, object, obj.src, function (err, data) {
+			if (err) {
+				logObj.status = 500;
+				hipcad.log.error(err);
+				hipcad.log.warn('controller.object.render', logObj);
+				return controller.fail(res, 'Server error.', 500, json);
+			}
+			hipcad.log.info('controller.object.render', logObj);
+			res.status(200).json({success: true, render: data});
+		});
+		/*if (json) {
+			hipcad.log.info('controller.object.get', logObj);
+			res.status(200).json({success: true, object: obj});
+		} else {
+			pageData.type = 'object';
+			pageData.owner = {
+				username : user,
+				object : object
+			}
+			page = {
+				pageData : JSON.stringify(pageData),
+				src: obj.src,
+				title : ' - ' + user + '/' + object,
+			};
+			hipcad.log.info('controller.object.get', logObj);
+			res.status(200).send(hipcad.page(hipcad.tmpl.home, page));
+		}*/
+	};
+	hipcad.tag(req, res, tagUserCb);
+};
+
 controller.login = function (req, res) {
 	'use strict';
-	var username, 
-		pwstring, 
+	var username,
+		pwstring,
 		json = controller.json(req),
 		tag,
 		logObj = {
@@ -437,10 +531,10 @@ controller.login = function (req, res) {
 		},
 	tagUserCb = function (req, res, tagOutput) {
 		tag = tagOutput;
-		
+
 		username = req.body.user;
 		pwstring = req.body.pwstring;
-		
+
 		logObj.tag = tag;
 		logObj.username = username;
 
@@ -590,5 +684,7 @@ app.get('/:user/:object', controller.object.get);
 app.post('/:user/:object', controller.object.create);
 app.put('/:user/:object', controller.object.update);
 app.delete('/:user/:object', controller.object.destroy);
+
+app.get('/:user/:object/render', controller.object.render);
 
 hipcad.init();
