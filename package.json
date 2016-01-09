@@ -24,6 +24,7 @@
     "mandrill-api": "^1.0.45",
     "moment": "^2.10.6",
     "nano": "^6.1.5",
+    "node-twitterbot": "^0.2.2",
     "node-uuid": "^1.4.3",
     "path": "^0.11.14",
     "pg": "^4.4.1",
@@ -33,6 +34,7 @@
     "session-file-store": "0.0.22",
     "shapeways": "^1.0.2",
     "shell-escape": "^0.2.0",
+    "twit": "^2.1.1",
     "when": "^3.7.5",
     "winston": "^1.1.2"
   },

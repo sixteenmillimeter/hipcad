@@ -23,6 +23,7 @@ hipcad.mail = require('./lib/mail.js')(hipcad.cfg);
 hipcad.log = require('./lib/logger.js')(hipcad.cfg, 'app');
 hipcad.recaptcha = require('./lib/recaptcha.js')(hipcad.cfg);
 hipcad.openscad = require('./lib/openscad.js')(hipcad.cfg);
+hipcad.tweet = require('./lib/tweet.js')(hipcad.cfg);
 
 hipcad.init = function () {
 	'use strict';
@@ -678,5 +679,10 @@ app.put('/:user/:object', controller.object.update);
 app.delete('/:user/:object', controller.object.destroy);
 
 app.get('/:user/:object/render', controller.object.render);
+
+app.get('/twittercb', function (req, res) {
+	hipcad.log.info('Tweeted successfully');
+	res.send('');
+});
 
 hipcad.init();
