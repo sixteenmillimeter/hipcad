@@ -485,20 +485,25 @@ controller.object.render = function (req, res) {
 			hipcad.log.warn('controller.object.render', logObj);
 			return controller.fail(res, 'Server error.', 500, json);
 		}
-		hipcad.openscad.service(user, object, obj.src, function (err, data) {
-			if (err) {
-				logObj.status = 500;
-				hipcad.log.error(err);
-				hipcad.log.warn('controller.object.render', logObj);
-				return controller.fail(res, 'Server error.', 500, json);
-			}
-			hipcad.log.info('controller.object.render', logObj);
-			if (json) {
-				res.status(200).json(data);
-			} else {
-				res.redirect(data.data.stl.replace('./', 'http://openscad.hipcad.com/'));
-			}
+
+		hipcad.objects.includes.process(obj.src, obj.includes, function (source) {
+			console.log(source);
+			hipcad.openscad.service(user, object, source, openscad_service_cb);
 		});
+	},
+	openscad_service_cb = function (err, data) {
+		if (err) {
+			logObj.status = 500;
+			hipcad.log.error(err);
+			hipcad.log.warn('controller.object.render', logObj);
+			return controller.fail(res, 'Server error.', 500, json);
+		}
+		hipcad.log.info('controller.object.render', logObj);
+		if (json) {
+			res.status(200).json(data);
+		} else {
+			res.redirect(data.data.stl.replace('./', 'http://openscad.hipcad.com/'));
+		}
 	};
 	hipcad.tag(req, res, tagUserCb);
 };
