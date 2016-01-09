@@ -486,10 +486,10 @@ controller.object.render = function (req, res) {
 			return controller.fail(res, 'Server error.', 500, json);
 		}
 
-		hipcad.objects.includes.process(obj.src, obj.includes, function (source) {
-			console.log(source);
-			hipcad.openscad.service(user, object, source, openscad_service_cb);
-		});
+		hipcad.objects.includes.process(obj.src, obj.includes, includes_process_cb);
+	},
+	includes_process_cb = function (source) {
+		hipcad.openscad.service(user, object, source, openscad_service_cb);
 	},
 	openscad_service_cb = function (err, data) {
 		if (err) {
