@@ -22,6 +22,7 @@
     "iz": "^0.7.1",
     "lodash": "^3.10.1",
     "mandrill-api": "^1.0.45",
+    "memwatch-next": "^0.2.10",
     "moment": "^2.10.6",
     "nano": "^6.1.5",
     "node-twitterbot": "^0.2.2",
