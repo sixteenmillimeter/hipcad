@@ -77,7 +77,6 @@ controller.home = function (req, res) {
 		logObj.path = '/';
 		logObj.status = 200;
 		hipcad.log.info('controller.home', logObj);
-		heapdump.writeSnapshot('./' + Date.now() + '.heapsnapshot');
 		res.status(200).send(hipcad.page(hipcad.tmpl.home, page));
 	};
 	hipcad.tag(req, res, tagUserCb);
@@ -144,7 +143,6 @@ controller.user.get = function (req, res) {
 				title : ' - ' + user
 			};
 			hipcad.log.info('controller.user.get', logObj);
-			heapdump.writeSnapshot('./' + Date.now() + '.heapsnapshot');
 			return res.status(200).send(hipcad.page(hipcad.tmpl.home, page));	}
 	};
 	hipcad.tag(req, res, tagUserCb);
@@ -317,7 +315,6 @@ controller.object.get = function (req, res) {
 				title : ' - ' + user + '/' + object,
 			};
 			hipcad.log.info('controller.object.get', logObj);
-			heapdump.writeSnapshot('./' + Date.now() + '.heapsnapshot');
 			res.status(200).send(hipcad.page(hipcad.tmpl.home, page));
 		}
 	};
@@ -414,9 +411,9 @@ controller.object.update = function (req, res) {
 		logObj.path = username + '/' + object;
 		logObj.username = username;
 		logObj.statusCode = 200;
+		logObj.json = json;
 
 		hipcad.log.info('controller.object.update', logObj);
-		heapdump.writeSnapshot('./' + Date.now() + '.heapsnapshot');
 		if (json) {
 			res.status(200).json({success: true});
 		} else {
@@ -690,4 +687,3 @@ app.get('/twittercb', function (req, res) {
 });
 
 hipcad.init();
-heapdump.writeSnapshot('./' + Date.now() + '.heapsnapshot');
