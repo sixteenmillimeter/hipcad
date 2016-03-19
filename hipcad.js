@@ -1,7 +1,7 @@
 console.log('Starting hipcad.js...');
 
 var fs = require('fs'),
-	heapdump = require('heapdump'),
+	//heapdump = require('heapdump'),
 	os = require('os'),
 	express = require('express'),
 	app = express(),
