@@ -19,6 +19,7 @@
     "fobject": "0.0.3",
     "glob": "^6.0.1",
     "handlebars": "^3.0.3",
+    "heapdump": "^0.3.7",
     "iz": "^0.7.1",
     "lodash": "^3.10.1",
     "mandrill-api": "^1.0.45",
