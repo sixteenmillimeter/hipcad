@@ -24,7 +24,10 @@ var onready= function () {
 			styleActiveLine: true,
 			matchBrackets: true,
 			theme: 'neat',
-			mode: 'lua'
+			mode: 'lua',
+			extraKeys: {"Ctrl-Q": function(cm){ cm.foldCode(cm.getCursor()); }},
+    		foldGutter: true,
+    		gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]
 		};
 
 	if (typeof pageData.session !== 'undefined' && pageData.session === true) {
