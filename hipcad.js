@@ -679,7 +679,7 @@ app.post('/:user/:object', controller.object.create);
 app.put('/:user/:object', controller.object.update);
 app.delete('/:user/:object', controller.object.destroy);
 
-app.get('/:user/:object/render', controller.object.render);
+//app.get('/:user/:object/render', controller.object.render);
 
 app.get('/twittercb', function (req, res) {
 	hipcad.log.info('Tweeted successfully');
