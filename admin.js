@@ -3,7 +3,7 @@ var fs = require('fs'),
 	cmd = require('commander'),
     moment = require('moment'),
     path = require('path'),
-    uuid = require('node-uuid'),
+    uuid = require('uuid'),
     cfg = require('./lib/cfg.js');
 
 var readLog = function (path) {

@@ -2,3 +2,4 @@ log/*
 node_modules/*
 sessions/*
 *.rdb
+lib/cfg.js

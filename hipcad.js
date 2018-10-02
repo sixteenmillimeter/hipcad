@@ -12,7 +12,7 @@ var fs = require('fs'),
 	FileStore = require('session-file-store')(expressSession)
     moment = require('moment'),
     path = require('path'),
-    uuid = require('node-uuid'),
+    uuid = require('uuid'),
     cfg = require('./lib/cfg.js');
 
 var hipcad = require('./lib/core.js')(cfg);
@@ -24,7 +24,6 @@ hipcad.mail = require('./lib/mail.js')(hipcad.cfg);
 hipcad.log = require('./lib/logger.js')(hipcad.cfg, 'app');
 hipcad.recaptcha = require('./lib/recaptcha.js')(hipcad.cfg);
 hipcad.openscad = require('./lib/openscad.js')(hipcad.cfg);
-hipcad.tweet = require('./lib/tweet.js')(hipcad.cfg);
 
 hipcad.init = function () {
 	'use strict';

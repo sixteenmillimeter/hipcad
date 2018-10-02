@@ -1,6 +1,6 @@
 var config = require('../lib/cfg.js'),
 	openscad = require('../lib/openscad.js')(config),
-	uuid = require('node-uuid'),
+	uuid = require('uuid'),
 	fs = require('fs');
 
 var testFile = fs.readFileSync('./test/openscad_test.scad', 'utf8'),
