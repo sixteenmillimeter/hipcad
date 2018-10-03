@@ -4,7 +4,8 @@
   "description": "Production version of site",
   "main": "index.js",
   "scripts": {
-    "test": "test"
+    "test": "test",
+    "dev": "sh ./scripts/dev.sh"
   },
   "author": "m mcwilliams",
   "license": "MIT",
@@ -25,10 +26,11 @@
     "helmet": "^3.13.0",
     "iz": "^2.2.4",
     "lodash": "^4.17.11",
+    "log": "file:lib/log",
     "mandrill-api": "^1.0.45",
     "moment": "^2.10.6",
     "nano": "^7.1.0",
-    "pg": "^7.4.3",
+    "pg": "file:lib/pg",
     "pg-pool": "^2.0.3",
     "request": "^2.88.0",
     "semver": "^5.1.0",
@@ -38,7 +40,8 @@
     "squel": "^5.12.2",
     "uuid": "^3.3.2",
     "validator": "^10.8.0",
-    "winston": "^2.4.4"
+    "winston": "^2.4.4",
+    "winston-papertrail": "^1.0.5"
   },
   "devDependencies": {
     "gulp": "^4.0.0",
