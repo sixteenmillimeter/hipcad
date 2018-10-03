@@ -11,6 +11,7 @@ const expressSession = require('express-session');
 const RedisStore = require('connect-redis')(expressSession);
 const FileStore = require('session-file-store')(expressSession);
 const uuid = require('uuid').v4;
+const cluster = require('cluster');
 
 const { hipcad, controller } = require('./lib/controller');
 
