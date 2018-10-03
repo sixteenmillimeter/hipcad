@@ -3,3 +3,4 @@ node_modules/*
 sessions/*
 *.rdb
 lib/cfg.js
+run_dev.sh
