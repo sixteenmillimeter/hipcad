@@ -40,16 +40,7 @@ License
 The project is licensed under the MIT license.
 
 
-Styleguide - Mark problem areas with TODO
-----------
+# TODO
 
-#1) For async functions.
-
-var functionName = function ([params], callback) {
-	'use strict';
-
-
-	//err = null || err Object
-	//data = undefined || Object with named key
-	callback(err, data)	
-};
+* Migrate off of CouchDB to Postgres
+* Add heroku build instructions
