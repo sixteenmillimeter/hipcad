@@ -4,3 +4,4 @@ sessions/*
 *.rdb
 lib/cfg.js
 run_dev.sh
+process.json

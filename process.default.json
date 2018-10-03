@@ -1,0 +1,16 @@
+{
+	"apps" : [
+		{
+			"name" : "hipcad",
+			"script" : "index.js",
+			"watch" : false,
+			"env" : {
+				"DEBUG" : true,
+				"PORT" : 6445,
+				"SITE" : "hipcad",
+				"DOMAIN" : "http://localhost:6445",
+				"DATABASE_URL" : "postgres://hipcad_user:baddevpassword@127.0.0.1:5432/hipcad"
+			}
+		}
+	]
+}
