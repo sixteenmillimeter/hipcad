@@ -3,5 +3,5 @@ node_modules/*
 sessions/*
 *.rdb
 lib/cfg.js
-run_dev.sh
+run_*.sh
 process.json
