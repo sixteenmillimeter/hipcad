@@ -20,7 +20,7 @@
     "fobject": "0.0.4",
     "fs-extra": "^7.0.0",
     "glob": "^7.1.3",
-    "handlebars": "^4.0.12",
+    "handlebars": "^4.3.0",
     "helmet": "^3.13.0",
     "iz": "^2.2.4",
     "lodash": "^4.17.11",
