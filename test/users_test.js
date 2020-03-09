@@ -1,5 +1,4 @@
-var config = require('../lib/cfg.js'),
-	users = require('../lib/users.js')(config);
+var users = require('../lib/users.js')();
 
 setTimeout(function () {
 	console.time('all tests');

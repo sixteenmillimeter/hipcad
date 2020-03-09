@@ -1,6 +1,5 @@
-var config = require('../lib/cfg.js'),
-	objects = require('../lib/objects.js')(config),
-	users = require('../lib/users.js')(config);
+var objects = require('../lib/objects.js')(),
+	users = require('../lib/users.js')();
 
 setTimeout(function () {
 	var testUser = 'testUserString',

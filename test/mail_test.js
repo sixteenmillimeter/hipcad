@@ -1,2 +1,3 @@
-var cfg = require('../lib/cfg.js'),
-	mail = require('../lib/mail.js')(cfg);
+'use strict';
+
+const mail = require('../lib/mail.js')();
