@@ -5,7 +5,7 @@ import { hash, compare } from 'bcrypt';
 import { v4 as uuid } from 'uuid';
 
 const iz = require('iz');
-const DB = require('pg');
+const DB = require('db');
 const delay = require('delay');
 const log = require('log')('users');
 
