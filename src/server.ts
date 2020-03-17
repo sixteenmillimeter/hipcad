@@ -1,7 +1,8 @@
 'use strict';
 
-const fs = require('fs-extra');
-const os = require('os');
+const { readFileSync } = require('fs-extra');
+const { platform } = require('os');
+const { join, resolve } = require('path');
 const express = require('express');
 const app = express();
 const helmet = require('helmet');
@@ -11,23 +12,24 @@ const expressSession = require('express-session');
 const RedisStore = require('connect-redis')(expressSession);
 const FileStore = require('session-file-store')(expressSession);
 const uuid = require('uuid').v4;
-const cluster = require('cluster');
 
 const { hipcad, controller } = require('./lib/controller');
 
-hipcad.log.info('Starting hipcad.js...');
+const log = require('log')('server');
+
+log.info('Starting hipcad...');
 
 app.use(helmet());
 
-app.use(cookieParser(hipcad.cfg.cookie_secret));
+app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(expressSession({
 	store: new RedisStore({
-    	host: hipcad.cfg.redis_url,
+    	host: process.env.REDIS_URL,
     	pass: '',
-    	port: hipcad.cfg.redis_port
+    	port: process.env.REDIS_PORT
   	}),
 	//store: new FileStore(),
-	secret: hipcad.cfg.session_secret,
+	secret: process.env.SESSION_SECRET,
 	saveUninitialized: true,
 	resave: true,
 	maxAge: 24 * 3600000
@@ -40,12 +42,13 @@ hipcad.tmpl.assign('home', './views/index.html');
 hipcad.tmpl.assign('err', './views/err.html');
 hipcad.tmpl.assign('user', './views/user.html');
 
-if (os.platform().indexOf('darwin') !== -1 || process.argv.indexOf('-d') !== -1 || process.argv.indexOf('--dev') !== -1) {
-	hipcad.log.info('Serving /static from node process on OSX');
-	app.use('/static', express.static(__dirname + '/static')); //for local dev
+if (platform().indexOf('darwin') !== -1 || process.argv.indexOf('-d') !== -1 || process.argv.indexOf('--dev') !== -1) {
+	log.info('Serving /static from node process on OSX');
+	log.info(resolve(join(__dirname + '/../static')));
+	app.use('/static', express.static( resolve(join(__dirname + '/../static')) )); //for local dev
 }
 
-app.get('/robots.txt', function(req, res) {
+app.get('/robots.txt', function(req : any, res : any, next : Function) {
 	'use strict';
 	res.set('Content-Type', 'text/plain');
 	res.send('User-agent: *\nDisallow: /\nUser-agent: Googlebot\nAllow: /\nUser-agent: Slurp\nAllow: /\nUser-agent: bingbot\nAllow: /');
@@ -71,17 +74,18 @@ app.delete('/:user/:object', controller.object.destroy);
 
 //app.get('/:user/:object/render', controller.object.render);
 
-const init = function () {
-	hipcad.log.infoPath = hipcad.cfg.logs;
+module.exports = function () {
+
 	if (hipcad.cmd('-d', '--dev')) {
-	    hipcad.log.info('Running in development mode');
+	    log.info('Running in development mode');
 	    hipcad.dev = true;
 	} else {
 	    hipcad.dev = false;
 	}
-	hipcad.homePage = fs.readFileSync('./views/info.txt', 'utf8');
-	app.listen(hipcad.cfg.port);
-	hipcad.log.info('Started server on http://127.0.0.1:' + hipcad.cfg.port);
+
+	hipcad.homePage = readFileSync('./views/info.txt', 'utf8');
+	
+	return app;
 };
 
-init();
+

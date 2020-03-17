@@ -1,6 +1,6 @@
 'use strict'
 
-/** @module db */
+/** @module pg */
 /** General purpose SQL db library for PostgreSQL. Used for prototyping and then deployment. */
 
 let Pool;
@@ -25,7 +25,7 @@ class DB {
 		this.squel = squel
 		if (!pool) {
 			Pool = require('pg').Pool
-			this.pool = new Pool({connectionString : DATABASE_URL })
+			this.pool = new Pool({ connectionString : DATABASE_URL })
 		} else {
 			this.pool = pool; //try this???
 		}

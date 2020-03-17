@@ -2,14 +2,28 @@
 	"apps" : [
 		{
 			"name" : "hipcad",
-			"script" : "index.js",
+			"script" : "dist/index.js",
 			"watch" : false,
 			"env" : {
 				"DEBUG" : true,
 				"PORT" : 6445,
 				"SITE" : "hipcad",
 				"DOMAIN" : "http://localhost:6445",
-				"DATABASE_URL" : "postgres://hipcad_user:baddevpassword@127.0.0.1:5432/hipcad"
+				
+				"DATABASE_URL" : "postgres://hipcad_user:baddevpassword@127.0.0.1:5432/hipcad",
+
+				"COOKIE_SECRET" : "",
+				"SESSION_SECRET" : "",
+
+				"LOGS" : "/var/log/hipcad/",
+
+				"REDIS_PORT" : 6379,
+				"REDIS_URL": "127.0.0.1",
+
+				"RECAPTCHA_PUBLIC_KEY"  : "",
+				"RECAPTCHA_PRIVATE_KEY" : "",
+
+				"WORKERS" : 1
 			}
 		}
 	]

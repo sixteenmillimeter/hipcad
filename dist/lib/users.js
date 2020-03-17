@@ -248,13 +248,13 @@ users.validateInfo = function (username, email, pwstring, pwstring2, callback) {
 };
 
 module.exports = function (cfg) {
-	DB = require('./db.js')(cfg);
+	/*DB = require('./db.js')(cfg);
 
 	DB.start('users', function () {
 		users.uniqueEmailView();
 	});
 	DB.start('pw', function () {});
-	DB.start('indexes', function () {});
+	DB.start('indexes', function () {});*/
 
 	//DB.addView(DB.users, )
 	return users;

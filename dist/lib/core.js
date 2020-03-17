@@ -58,6 +58,6 @@ core.taglog = function (tag, req) {
 };
 
 
-module.exports = function (cfg) {
+module.exports = function () {
 	return core;
 };

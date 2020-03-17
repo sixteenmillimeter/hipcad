@@ -33,7 +33,7 @@ recaptcha.verify = function (response, ip, callback) {
 	request.post(postObj, postResponse)
 };
 
-module.exports = function (cfg) {
-	privateKey = cfg.RECAPTCHA_PRIVATE_KEY;
+module.exports = function () {
+	privateKey = process.env.RECAPTCHA_PRIVATE_KEY;
 	return recaptcha;
 };

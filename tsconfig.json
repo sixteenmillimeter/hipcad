@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "esModuleInterop": true,
+        "target": "ES2018",
+        "noImplicitAny": true,
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "removeComments" : false,
+        "outDir": "dist",
+        "baseUrl" : "./",
+        "paths" : {
+            "request": [
+                ".sink.d.ts"
+            ]
+        }
+    },
+    "include": [
+        "./src/**/*"
+    ],
+    "exclude" : [
+        "node_modules",
+        "test",
+        "static",
+        "dist"
+    ]
+}

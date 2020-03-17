@@ -1,9 +1,9 @@
 'use strict';
-//mail.js
+
+const log = require('log')('mail');
 
 const mail = {};
 let config;
-let log;
 
 mail.mandrill = require('mandrill-api/mandrill');
 
@@ -66,15 +66,13 @@ mail.msg = function (name, email, subject, message, from, fromName, replyTo, tag
 	};
 };
 
-module.exports = function (cfg) {
-	config = cfg;
-	log = require('./logger.js')('mail');
+module.exports = function () {
 	
-	mail.KEY = config.mandrill_key;
+	/*mail.KEY = config.mandrill_key;
 	mail.FROM = config.mail_from;
 	mail.FROMNAME = config.mail_from_name;
 	mail.REPLYTO = config.mail_reply_to;
-	mail.client = new mail.mandrill.Mandrill(mail.KEY);
+	mail.client = new mail.mandrill.Mandrill(mail.KEY);*/
 
 	return mail;
 };

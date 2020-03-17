@@ -211,10 +211,10 @@ objects.includes.toPath = function (str) {
 	return str.trim();
 };
 
-module.exports = function (cfg) {
-	DB = require('./db.js')(cfg);
+module.exports = function () {
+	/*DB = require('./db.js')(cfg);
 
 	DB.start('objects', function () {});
-	DB.start('indexes', function () {});
+	DB.start('indexes', function () {});*/
 	return objects;
 };

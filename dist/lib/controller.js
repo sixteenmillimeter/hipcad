@@ -1,19 +1,17 @@
 'use strict';
 
 const fs = require('fs-extra');
-
-const cfg = require('./cfg');
 const pool = require('dbpool');
 
-const hipcad = require('./core')(cfg);
-hipcad.cfg = cfg;
-hipcad.users = require('./users')(hipcad.cfg);
-hipcad.objects = require('./objects')(hipcad.cfg);
-hipcad.tmpl = require('./templates')(hipcad.cfg);
-hipcad.mail = require('./mail')(hipcad.cfg);
-hipcad.recaptcha = require('./recaptcha')(hipcad.cfg);
-hipcad.openscad = require('./openscad')(hipcad.cfg);
-hipcad.log = require('log')('app');
+const hipcad = require('./core')();
+hipcad.users = require('./users')();
+hipcad.objects = require('./objects')();
+hipcad.tmpl = require('./templates')();
+hipcad.mail = require('./mail')();
+hipcad.recaptcha = require('./recaptcha')();
+hipcad.openscad = require('./openscad')();
+
+const log = require('log')('app');
 
 const controller = {};
 controller.fail = function (res, msg, status, json) {
@@ -49,7 +47,7 @@ controller.home = function (req, res) {
 		logObj.tag = tag;
 		logObj.path = '/';
 		logObj.status = 200;
-		hipcad.log.info('controller.home', logObj);
+		log.info('controller.home', logObj);
 		res.status(200).send(hipcad.page(hipcad.tmpl.home, page));
 	};
 	hipcad.tag(req, res, tagUserCb);
@@ -90,7 +88,7 @@ controller.user.get = function (req, res) {
 			hipcad.objects.index(user, userIndexCb);
 		} else {
 			logObj.status = 404;
-			hipcad.log.info('controller.user.get', logObj);
+			log.info('controller.user.get', logObj);
 			controller.fail(res, 'Page not found.', 404, json);
 		}
 
@@ -99,7 +97,7 @@ controller.user.get = function (req, res) {
 		//TODO: handle err
 		if (json) {
 			page = {success: true, user : user, objects: data};
-			hipcad.log.info('controller.user.get', logObj);
+			log.info('controller.user.get', logObj);
 			return res.status(200).json(page);
 		} else {
 			pageData.type = 'user';
@@ -114,7 +112,7 @@ controller.user.get = function (req, res) {
 				src: JSON.stringify(data, null, '\t'),
 				title : ' - ' + user
 			};
-			hipcad.log.info('controller.user.get', logObj);
+			log.info('controller.user.get', logObj);
 			return res.status(200).send(hipcad.page(hipcad.tmpl.home, page));	}
 	};
 	hipcad.tag(req, res, tagUserCb);
@@ -160,7 +158,7 @@ controller.user.create = function (req, res) {
 			hipcad.users.validateInfo(username, email, pwstring, pwstring2, validateInfoCb);
 		} else {
 			logObj.status = 400;
-			hipcad.log.warn('controller.user.create', logObj);
+			log.warn('controller.user.create', logObj);
 			return controller.fail(res, 'Invalid request', 400, json);
 		}
 	},
@@ -171,7 +169,7 @@ controller.user.create = function (req, res) {
 			logObj.status = 400;
 			logObj.err = err;
 			logObj.username = username;
-			hipcad.log.warn('controller.user.create', logObj);
+			log.warn('controller.user.create', logObj);
 			return controller.fail(res, err, 400, json); //use this to trigger UI events
 		}
 	},
@@ -182,7 +180,7 @@ controller.user.create = function (req, res) {
 			logObj.status = 400;
 			logObj.err = {item: 'email', msg: 'Email is currently in use'};
 			logObj.username = username;
-			hipcad.log.warn('controller.user.create', logObj);
+			log.warn('controller.user.create', logObj);
 			return controller.fail(res, err, 400, json);
 		}
 	},
@@ -193,17 +191,17 @@ controller.user.create = function (req, res) {
 			logObj.status = 400;
 			logObj.err = {item: 'recaptcha'};
 			logObj.username = username;
-			hipcad.log.warn('controller.user.create', logObj);
+			log.warn('controller.user.create', logObj);
 			return controller.fail(res, err, 400, json);
 		}
 	},
 	usersCreateCb = function (err, userObj) {
 		if (err) {
 			logObj.status = 500;
-			hipcad.log.warn('controller.user.create', logObj);
+			log.warn('controller.user.create', logObj);
 			return controller.fail(res, 'Error creating user', 500, json);
 		}
-		hipcad.log.info('controller.user.create', logObj);
+		log.info('controller.user.create', logObj);
 		hipcad.mail.send(username, email, 'Welcome to hipcad.com!', 'Thanks for signing up for hipcad. Please feel free to email us with comments or questions.', null);
 		if (json) {
 			res.status(200).json({success: true});
@@ -249,7 +247,7 @@ controller.object.get = function (req, res) {
 			hipcad.objects.exists(user, object, objectsExistsCb);
 		} else {
 			logObj.status = 404;
-			hipcad.log.warn('controller.object.get', logObj);
+			log.warn('controller.object.get', logObj);
 			controller.fail(res, 'Page not found.', 404, json);
 		}
 	},
@@ -258,19 +256,19 @@ controller.object.get = function (req, res) {
 			hipcad.objects.get(user, object, objectsGetCb);
 		} else {
 			logObj.status = 404;
-			hipcad.log.warn('controller.object.get', logObj);
+			log.warn('controller.object.get', logObj);
 			controller.fail(res, 'Page not found.', 404, json);
 		}
 	},
 	objectsGetCb = function (err, obj) {
 		if (err) {
 			logObj.status = 500;
-			hipcad.log.error(err);
-			hipcad.log.warn('controller.object.get', logObj);
+			log.error(err);
+			log.warn('controller.object.get', logObj);
 			return controller.fail(res, 'Server error.', 500, json);
 		}
 		if (json) {
-			hipcad.log.info('controller.object.get', logObj);
+			log.info('controller.object.get', logObj);
 			delete obj.id;
 			res.status(200).json({success: true, object: obj});
 		} else {
@@ -284,7 +282,7 @@ controller.object.get = function (req, res) {
 				src: obj.src,
 				title : ' - ' + user + '/' + object,
 			};
-			hipcad.log.info('controller.object.get', logObj);
+			log.info('controller.object.get', logObj);
 			res.status(200).send(hipcad.page(hipcad.tmpl.home, page));
 		}
 	};
@@ -311,11 +309,11 @@ controller.object.get = async function (req, res, next) {
 		exists = await hipcad.objects.exists(user, object);
 	} catch (err) {
 		logObj.err = err;
-		hipcad.log.error(`Error determining if object exists`, logObj);
+		log.error(`Error determining if object exists`, logObj);
 		return controller.fail(res, 500, 'Error determining if object exists', json);
 	}
 
-	hipcad.log.info(logObj);
+	log.info(logObj);
 	return res.send('bla')
 };
 
@@ -332,7 +330,7 @@ controller.object.create = function (req, res) {
 	},
 	authCb = function (err, auth) {
 		if (err) {
-			hipcad.log.error(err);
+			log.error(err);
 			return controller.fail(res, 'Server error', 500, json);
 		}
 		username = req.params.user;
@@ -340,8 +338,8 @@ controller.object.create = function (req, res) {
 		source = req.body.source;
 
 		if (username !== req.session.token.username) {
-			hipcad.log.error('Unauthorized access attempt');
-			hipcad.log.error(req.params);
+			log.error('Unauthorized access attempt');
+			log.error(req.params);
 			return controller.fail(res, 'Unauthorized Access', 403, json);
 		}
 
@@ -350,15 +348,15 @@ controller.object.create = function (req, res) {
 	objectsCreateCb = function (err, data) {
 		if (err) {
 			logObj.status = 500;
-			hipcad.log.warn('controller.object.create', logObj);
-			hipcad.log.error(err);
+			log.warn('controller.object.create', logObj);
+			log.error(err);
 			return controller.fail(res, 'Server error', 500, json);
 		}
 		logObj.tag = tag;
 		logObj.path = username + '/' + object;
 		logObj.username = username;
 		logObj.statusCode = 200;
-		hipcad.log.info(logObj);
+		log.info(logObj);
 		if (json) {
 			res.status(200).json({success: true});
 		} else {
@@ -380,7 +378,7 @@ controller.object.update = function (req, res) {
 	},
 	authCb = function (err, auth) {
 		if (err) {
-			hipcad.log.error(err);
+			log.error(err);
 			return controller.fail(res, 'Server error', 500, json);
 		}
 		username = req.params.user;
@@ -388,8 +386,8 @@ controller.object.update = function (req, res) {
 		source = req.body.source;
 
 		if (username !== req.session.token.username) {
-			hipcad.log.error('Unauthorized access attempt');
-			hipcad.log.error(req.params);
+			log.error('Unauthorized access attempt');
+			log.error(req.params);
 			return controller.fail(res, 'Unauthorized Access', 403, json);
 		}
 
@@ -398,8 +396,8 @@ controller.object.update = function (req, res) {
 	objectsUpdateCb = function (err, data) {
 		if (err) {
 			logObj.status = 500;
-			hipcad.log.info('controller.object.update', logObj);
-			hipcad.log.error(err);
+			log.info('controller.object.update', logObj);
+			log.error(err);
 			return controller.fail(res, 'Server error', 500, json);
 		}
 
@@ -409,7 +407,7 @@ controller.object.update = function (req, res) {
 		logObj.statusCode = 200;
 		logObj.json = json;
 
-		hipcad.log.info('controller.object.update', logObj);
+		log.info('controller.object.update', logObj);
 		if (json) {
 			res.status(200).json({success: true});
 		} else {
@@ -445,13 +443,13 @@ controller.object.render = function (req, res) {
 			logObj.username = req.session.token.username;
 		} else {
 			logObj.status = 401;
-			hipcad.log.warn('controller.object.render', logObj);
+			log.warn('controller.object.render', logObj);
 			return controller.fail(res, 'Not logged in.', 401, json);
 		}
 
 		if (user !== req.session.token.username) {
 			logObj.status = 401;
-			hipcad.log.warn('controller.object.render', logObj);
+			log.warn('controller.object.render', logObj);
 			return controller.fail(res, 'Unauthorized.', 401, json);
 		}
 
@@ -462,7 +460,7 @@ controller.object.render = function (req, res) {
 			hipcad.objects.exists(user, object, objectsExistsCb);
 		} else {
 			logObj.status = 404;
-			hipcad.log.warn('controller.object.render', logObj);
+			log.warn('controller.object.render', logObj);
 			controller.fail(res, 'Page not found.', 404, json);
 		}
 	},
@@ -471,15 +469,15 @@ controller.object.render = function (req, res) {
 			hipcad.objects.get(user, object, objectsGetCb);
 		} else {
 			logObj.status = 404;
-			hipcad.log.warn('controller.object.render', logObj);
+			log.warn('controller.object.render', logObj);
 			controller.fail(res, 'Page not found.', 404, json);
 		}
 	},
 	objectsGetCb = function (err, obj) {
 		if (err) {
 			logObj.status = 500;
-			hipcad.log.error(err);
-			hipcad.log.warn('controller.object.render', logObj);
+			log.error(err);
+			log.warn('controller.object.render', logObj);
 			return controller.fail(res, 'Server error.', 500, json);
 		}
 
@@ -491,11 +489,11 @@ controller.object.render = function (req, res) {
 	openscad_service_cb = function (err, data) {
 		if (err) {
 			logObj.status = 500;
-			hipcad.log.error(err);
-			hipcad.log.warn('controller.object.render', logObj);
+			log.error(err);
+			log.warn('controller.object.render', logObj);
 			return controller.fail(res, 'Server error.', 500, json);
 		}
-		hipcad.log.info('controller.object.render', logObj);
+		log.info('controller.object.render', logObj);
 		if (json) {
 			res.status(200).json(data);
 		} else {
@@ -531,16 +529,16 @@ controller.login = function (req, res) {
 	usersLoginCb = function (err, success) {
 		if (err) {
 			logObj.status = 401.1;
-			hipcad.log.warn('controller.login', logObj);
-			hipcad.log.error(err);
+			log.warn('controller.login', logObj);
+			log.error(err);
 			return controller.fail(res, 'User login failed', 401.1, json);
 		}
 		if (success) {
 			hipcad.users.get(username, usersGetCb);
 		} else {
 			logObj.status = 401.1;
-			hipcad.log.warn('users.login callback success false');
-			hipcad.log.warn('controller.login', logObj);
+			log.warn('users.login callback success false');
+			log.warn('controller.login', logObj);
 			controller.fail(res, 'User login failed', 401.1, json);
 		}
 	},
@@ -549,8 +547,8 @@ controller.login = function (req, res) {
 		opt;
 		if (err) {
 			logObj.status = 401.1;
-			hipcad.log.warn('controller.login', logObj);
-			hipcad.log.error(err);
+			log.warn('controller.login', logObj);
+			log.error(err);
 			return controller.fail(res, 'User login failed', 401.1, json);
 		}
 		tokenObj = {
@@ -562,7 +560,7 @@ controller.login = function (req, res) {
 		};
 
 		req.session.token = tokenObj;
-		hipcad.log.info('controller.login', logObj);
+		log.info('controller.login', logObj);
 		res.status(200).json({success: true});
 	};
 	hipcad.tag(req, res, tagUserCb);
@@ -586,7 +584,7 @@ controller.logout = function (req, res) {
 		logObj.username = username;
 		logObj.realSession = realSession;
 
-		hipcad.log.info('controller.logout', logObj);
+		log.info('controller.logout', logObj);
 
 		if (json) {
 			res.status(200).json({success: realSession});
