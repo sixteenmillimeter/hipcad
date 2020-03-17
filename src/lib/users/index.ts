@@ -33,9 +33,9 @@ users.prohibit = ['static', 'user', 'object', 'hipcad', 'twittercb'];
 
 users.create = async function (username : string, email : string, pwstring : string, pwstring2 : string) {
 	const userobj : any = {
-		username : username.toLowerCase(),
 		id : uuid(),
-		email : email.toLowerCase(),
+		username,
+		email,
 		joined : new Date().getTime(),
 		paid : null,
 		transaction : null
@@ -44,7 +44,7 @@ users.create = async function (username : string, email : string, pwstring : str
 	let failed : string;
 
 	userobj.usernamehash = users.hash(username.toLowerCase());
-	userobj.emailhash = users.hash(userobj.email);
+	userobj.emailhash = users.hash(userobj.email.toLowerCase());
 
 	failed = users.validateInfo(userobj.username, userobj.email, pwstring, pwstring2);
 
@@ -68,12 +68,14 @@ users.create = async function (username : string, email : string, pwstring : str
 		userobj.passwordhash = await users.hashpw(pwstring);
 	} catch (err) {
 		log.error(err);
+		return { error : err };
 	}
 
 	try {
 		await usersDB.insert(userobj);
 	} catch (err) {
 		log.error(err);
+		return { error : err };
 	}
 
 	return userobj;
@@ -102,6 +104,7 @@ users.auth = async function (username : string, pwstring : string) {
 		matched = await compare(pwstring, userobj.passwordhash)
 	} catch (err) {
 		log.error(err);
+		return { error : 'Error confirming password' };
 	}
 
 	if (!matched) {
@@ -218,19 +221,3 @@ module.exports = async function (pool : any) {
 
 	return users;
 }
-
-/*
-
-user obj
-{
-	username
-	id
-}
-
-pw obj
-{
-	hash : '',
-	salt : ''
-}
-
-*/

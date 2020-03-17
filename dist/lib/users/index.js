@@ -4,7 +4,7 @@ const crypto_1 = require("crypto");
 const bcrypt_1 = require("bcrypt");
 const uuid_1 = require("uuid");
 const iz = require('iz');
-const DB = require('pg');
+const DB = require('db');
 const delay = require('delay');
 const log = require('log')('users');
 const users = {};
@@ -26,9 +26,9 @@ users.exists = async function (usernamehash, emailhash) {
 users.prohibit = ['static', 'user', 'object', 'hipcad', 'twittercb'];
 users.create = async function (username, email, pwstring, pwstring2) {
     const userobj = {
-        username: username.toLowerCase(),
         id: uuid_1.v4(),
-        email: email.toLowerCase(),
+        username,
+        email,
         joined: new Date().getTime(),
         paid: null,
         transaction: null
@@ -36,7 +36,7 @@ users.create = async function (username, email, pwstring, pwstring2) {
     let exists;
     let failed;
     userobj.usernamehash = users.hash(username.toLowerCase());
-    userobj.emailhash = users.hash(userobj.email);
+    userobj.emailhash = users.hash(userobj.email.toLowerCase());
     failed = users.validateInfo(userobj.username, userobj.email, pwstring, pwstring2);
     if (failed) {
         await delay(2000);
@@ -57,12 +57,14 @@ users.create = async function (username, email, pwstring, pwstring2) {
     }
     catch (err) {
         log.error(err);
+        return { error: err };
     }
     try {
         await usersDB.insert(userobj);
     }
     catch (err) {
         log.error(err);
+        return { error: err };
     }
     return userobj;
 };
@@ -87,6 +89,7 @@ users.auth = async function (username, pwstring) {
     }
     catch (err) {
         log.error(err);
+        return { error: 'Error confirming password' };
     }
     if (!matched) {
         await delay(2000);
