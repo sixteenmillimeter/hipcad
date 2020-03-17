@@ -11,23 +11,13 @@ const expressSession = require('express-session');
 const RedisStore = require('connect-redis')(expressSession);
 const FileStore = require('session-file-store')(expressSession);
 const uuid = require('uuid').v4;
+const session = require('sessionr');
 const log = require('log')('server');
 const app = express();
 log.info('Starting hipcad...');
 app.use(helmet());
 app.use(cookieParser(process.env.COOKIE_SECRET));
-app.use(expressSession({
-    store: new RedisStore({
-        host: process.env.REDIS_URL,
-        pass: '',
-        port: process.env.REDIS_PORT
-    }),
-    //store: new FileStore(),
-    secret: process.env.SESSION_SECRET,
-    saveUninitialized: true,
-    resave: true,
-    maxAge: 24 * 3600000
-}));
+app.use(session);
 app.use(bodyParser.json({ limit: '5mb' }));
 app.use(bodyParser.urlencoded({ limit: '5mb', extended: false }));
 if (os_1.platform().indexOf('darwin') !== -1 || process.argv.indexOf('-d') !== -1 || process.argv.indexOf('--dev') !== -1) {
