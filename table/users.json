@@ -1,0 +1,11 @@
+{
+	"id" : "UUID PRIMARY KEY",
+	"username" : "VARCHAR UNIQUE",
+	"usernamehash" : "VARCHAR UNIQUE",
+	"email" : "VARCHAR UNIQUE",
+	"emailhash" : "VARCHAR UNIQUE",
+	"passwordhash" : "VARCHAR",
+	"joined" : "BIGINT",
+	"paid" : "SMALLINT DEFAULT 0",
+	"transaction" : "VARCHAR"
+}
