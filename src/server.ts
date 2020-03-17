@@ -3,14 +3,11 @@
 import { readFile } from 'fs-extra';
 import { platform } from 'os';
 import { join, resolve } from 'path';
-const express = require('express');
-const helmet = require('helmet');
-const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
-const expressSession = require('express-session');
-const RedisStore = require('connect-redis')(expressSession);
-const FileStore = require('session-file-store')(expressSession);
-const uuid = require('uuid').v4;
+import express from 'express';
+import helmet from 'helmet';
+import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
+import { v4 as uuid } from 'uuid';
 
 const session = require('sessionr');
 const log = require('log')('server');

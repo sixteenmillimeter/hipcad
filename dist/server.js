@@ -1,32 +1,31 @@
 'use strict';
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_extra_1 = require("fs-extra");
 const os_1 = require("os");
 const path_1 = require("path");
-const express = require('express');
-const helmet = require('helmet');
-const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
-const expressSession = require('express-session');
-const RedisStore = require('connect-redis')(expressSession);
-const FileStore = require('session-file-store')(expressSession);
-const uuid = require('uuid').v4;
+const express_1 = __importDefault(require("express"));
+const helmet_1 = __importDefault(require("helmet"));
+const body_parser_1 = __importDefault(require("body-parser"));
+const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const session = require('sessionr');
 const log = require('log')('server');
-const app = express();
+const app = express_1.default();
 log.info('Starting hipcad...');
-app.use(helmet());
-app.use(cookieParser(process.env.COOKIE_SECRET));
+app.use(helmet_1.default());
+app.use(cookie_parser_1.default(process.env.COOKIE_SECRET));
 app.use(session);
-app.use(bodyParser.json({ limit: '5mb' }));
-app.use(bodyParser.urlencoded({ limit: '5mb', extended: false }));
+app.use(body_parser_1.default.json({ limit: '5mb' }));
+app.use(body_parser_1.default.urlencoded({ limit: '5mb', extended: false }));
 if (os_1.platform().indexOf('darwin') !== -1
     || process.argv.indexOf('-d') !== -1
     || process.argv.indexOf('--dev') !== -1
     || (typeof process.env.DEBUG !== 'undefined' && process.env.DEBUG === 'true')) {
     log.info('Serving /static from node process on OSX');
     log.info(path_1.resolve(path_1.join(__dirname + '/../static')));
-    app.use('/static', express.static(path_1.resolve(path_1.join(__dirname + '/../static')))); //for local dev
+    app.use('/static', express_1.default.static(path_1.resolve(path_1.join(__dirname + '/../static')))); //for local dev
 }
 app.get('/robots.txt', function (req, res, next) {
     'use strict';
