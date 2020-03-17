@@ -1,10 +1,9 @@
 'use strict';
 
-const { readFileSync } = require('fs-extra');
-const { platform } = require('os');
-const { join, resolve } = require('path');
+import { readFile } from 'fs-extra';
+import { platform } from 'os';
+import { join, resolve } from 'path';
 const express = require('express');
-const app = express();
 const helmet = require('helmet');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
@@ -13,9 +12,9 @@ const RedisStore = require('connect-redis')(expressSession);
 const FileStore = require('session-file-store')(expressSession);
 const uuid = require('uuid').v4;
 
-const { hipcad, controller } = require('./lib/controller');
-
 const log = require('log')('server');
+
+const app = express();
 
 log.info('Starting hipcad...');
 
@@ -38,10 +37,6 @@ app.use(expressSession({
 app.use(bodyParser.json({limit : '5mb'}));
 app.use(bodyParser.urlencoded({limit : '5mb', extended: false}));
 
-hipcad.tmpl.assign('home', './views/index.html');
-hipcad.tmpl.assign('err', './views/err.html');
-hipcad.tmpl.assign('user', './views/user.html');
-
 if (platform().indexOf('darwin') !== -1 || process.argv.indexOf('-d') !== -1 || process.argv.indexOf('--dev') !== -1) {
 	log.info('Serving /static from node process on OSX');
 	log.info(resolve(join(__dirname + '/../static')));
@@ -54,27 +49,33 @@ app.get('/robots.txt', function(req : any, res : any, next : Function) {
 	res.send('User-agent: *\nDisallow: /\nUser-agent: Googlebot\nAllow: /\nUser-agent: Slurp\nAllow: /\nUser-agent: bingbot\nAllow: /');
 });
 
-app.get('/', controller.home);
+module.exports = async function (pool : any) {
 
-app.post('/user/login', controller.login);
-app.post('/user/logout', controller.logout);
-app.get('/user/logout', controller.logout);
+	const { hipcad, controller } = await require('./lib/controller')(pool);
 
-app.post('/user/create', controller.user.create);
+	hipcad.tmpl.assign('home', './views/index.html');
+	hipcad.tmpl.assign('err', './views/err.html');
+	hipcad.tmpl.assign('user', './views/user.html');
 
-app.get('/:user', controller.user.get);
-//app.put('/:user', controller.user.update);
-//app.delete('/:user', controller.user.update);
+	app.get('/', controller.home);
 
-app.get('/:user/:object', controller.object.get);
-//app.get('/:user/:object/:rev', controller.object.getRevision);
-app.post('/:user/:object', controller.object.create);
-app.put('/:user/:object', controller.object.update);
-app.delete('/:user/:object', controller.object.destroy);
+	app.post('/user/login', controller.login);
+	app.post('/user/logout', controller.logout);
+	app.get('/user/logout', controller.logout);
 
-//app.get('/:user/:object/render', controller.object.render);
+	app.post('/user/create', controller.user.create);
 
-module.exports = function () {
+	app.get('/:user', controller.user.get);
+	//app.put('/:user', controller.user.update);
+	//app.delete('/:user', controller.user.update);
+
+	app.get('/:user/:object', controller.object.get);
+	//app.get('/:user/:object/:rev', controller.object.getRevision);
+	app.post('/:user/:object', controller.object.create);
+	app.put('/:user/:object', controller.object.update);
+	app.delete('/:user/:object', controller.object.destroy);
+
+	//app.get('/:user/:object/render', controller.object.render);
 
 	if (hipcad.cmd('-d', '--dev')) {
 	    log.info('Running in development mode');
@@ -83,7 +84,11 @@ module.exports = function () {
 	    hipcad.dev = false;
 	}
 
-	hipcad.homePage = readFileSync('./views/info.txt', 'utf8');
+	try {
+		hipcad.homePage = await readFile('./views/info.txt', 'utf8');
+	} catch (err) {
+		log.error(err);
+	}
 	
 	return app;
 };
