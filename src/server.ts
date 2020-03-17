@@ -27,7 +27,10 @@ app.use(session);
 app.use(bodyParser.json({limit : '5mb'}));
 app.use(bodyParser.urlencoded({limit : '5mb', extended: false}));
 
-if (platform().indexOf('darwin') !== -1 || process.argv.indexOf('-d') !== -1 || process.argv.indexOf('--dev') !== -1) {
+if (platform().indexOf('darwin') !== -1 
+	|| process.argv.indexOf('-d') !== -1 
+	|| process.argv.indexOf('--dev') !== -1
+	|| (typeof process.env.DEBUG !== 'undefined' && process.env.DEBUG === 'true') ) {
 	log.info('Serving /static from node process on OSX');
 	log.info(resolve(join(__dirname + '/../static')));
 	app.use('/static', express.static( resolve(join(__dirname + '/../static')) )); //for local dev
@@ -59,11 +62,11 @@ module.exports = async function (pool : any) {
 	//app.put('/:user', controller.user.update);
 	//app.delete('/:user', controller.user.update);
 
-	app.get('/:user/:object', controller.object.get);
+	//app.get('/:user/:object', controller.object.get);
 	//app.get('/:user/:object/:rev', controller.object.getRevision);
-	app.post('/:user/:object', controller.object.create);
-	app.put('/:user/:object', controller.object.update);
-	app.delete('/:user/:object', controller.object.destroy);
+	//app.post('/:user/:object', controller.object.create);
+	//app.put('/:user/:object', controller.object.update);
+	//app.delete('/:user/:object', controller.object.destroy);
 
 	//app.get('/:user/:object/render', controller.object.render);
 
