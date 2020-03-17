@@ -35,7 +35,7 @@ class DB {
 		try {
 			await this._createTable();
 		} catch (err) {
-			//
+			log.error(err)
 		}
 	}
 
@@ -54,7 +54,7 @@ class DB {
 			if (err.code === '42P07') {
 				if (!silent) log.info(fn, `TABLE ${this._tableName} already exists`)
 			} else {
-				log.error(fn, { err: err })
+				log.error(fn, err)
 			}
 		}
 		if (!silent && res) log.info(fn, `Created TABLE ${this._tableName}`)
