@@ -44,6 +44,4 @@ tmpl.update = function (name, path, callback) {
 	});
 };
 
-module.exports = function (cfg) {
-	return tmpl;
-};
+module.exports = tmpl;
