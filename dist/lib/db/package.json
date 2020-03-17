@@ -1,5 +1,5 @@
 {
-  "name": "pg",
+  "name": "db",
   "version": "1.0.0",
   "description": "General purpose SQL db library for Postgres. Used for prototyping and then deployment.",
   "main": "index.js",

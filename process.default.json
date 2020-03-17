@@ -13,12 +13,13 @@
 				"DATABASE_URL" : "postgres://hipcad_user:baddevpassword@127.0.0.1:5432/hipcad",
 
 				"COOKIE_SECRET" : "",
+				"SESSION_NAME" : "hipcad",
 				"SESSION_SECRET" : "",
-
-				"LOGS" : "/var/log/hipcad/",
 
 				"REDIS_PORT" : 6379,
 				"REDIS_URL": "127.0.0.1",
+
+				"LOGS" : "/var/log/hipcad/",
 
 				"RECAPTCHA_PUBLIC_KEY"  : "",
 				"RECAPTCHA_PRIVATE_KEY" : "",
