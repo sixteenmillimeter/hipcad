@@ -1,9 +1,11 @@
 {
 	"id" : "UUID PRIMARY KEY",
+	"user" : "UUID",
 	"created" : "BIGINT",
 	"updated" : "BIGINT",
 	"path" : "VARCHAR",
 	"src" : "VARCHAR",
 	"includes" : "JSON",
-	"rendered" : "SMALLINT DEFAULT 0"
+	"rendered" : "SMALLINT DEFAULT 0",
+	"deleted" : "SMALLINT DEFAULT 0"
 }
