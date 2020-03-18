@@ -2,7 +2,7 @@
   "name": "hipcad",
   "version": "0.2.0",
   "description": "Production version of site",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "test",
     "dev": "npm run compile && sh ./scripts/dev.sh",
