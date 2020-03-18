@@ -9,7 +9,7 @@ const delay = require('delay');
 const log = require('log')('users');
 const users = {};
 let usersDB;
-users.exists = async function (usernamehash, emailhash) {
+users.exists = async function users_exists(usernamehash, emailhash) {
     let exists = null;
     let res;
     try {
@@ -24,7 +24,7 @@ users.exists = async function (usernamehash, emailhash) {
     return exists;
 };
 users.prohibit = ['static', 'user', 'object', 'hipcad', 'twittercb'];
-users.create = async function (username, email, pwstring, pwstring2) {
+users.create = async function users_create(username, email, pwstring, pwstring2) {
     const userobj = {
         id: uuid_1.v4(),
         username,
@@ -68,10 +68,10 @@ users.create = async function (username, email, pwstring, pwstring2) {
     }
     return userobj;
 };
-users.reset = async function (username, email, pwstring) {
+users.reset = async function users_reset(username, email, pwstring) {
     //
 };
-users.auth = async function (username, pwstring) {
+users.auth = async function users_auth(username, pwstring) {
     let userobj;
     let matched = false;
     try {
@@ -97,15 +97,15 @@ users.auth = async function (username, pwstring) {
     }
     return userobj;
 };
-users.hash = function (str) {
+users.hash = function users_hash(str) {
     //
     return crypto_1.createHash('sha256').update(str).digest('base64');
 };
-users.hashpw = async function (value) {
+users.hashpw = async function users_hashpw(value) {
     //
     return bcrypt_1.hash(value, 10);
 };
-users.destroy = async function (username, pwstring) {
+users.destroy = async function users_destroy(username, pwstring) {
     let userobj;
     let matched = false;
     try {
@@ -142,7 +142,7 @@ users.destroy = async function (username, pwstring) {
     }
     return { success: true };
 };
-users.get = async function (username) {
+users.get = async function users_get(username) {
     let usernamehash = users.hash(username.toLowerCase());
     let res;
     try {
@@ -156,7 +156,7 @@ users.get = async function (username) {
     }
     return null;
 };
-users.list = async function () {
+users.list = async function users_list() {
     let res;
     try {
         res = await usersDB.list();
@@ -166,7 +166,7 @@ users.list = async function () {
     }
     return res.rows;
 };
-users.validateInfo = function (username, email, pwstring, pwstring2) {
+users.validateInfo = function users_validateInfo(username, email, pwstring, pwstring2) {
     if (users.prohibit.indexOf(username) !== -1) {
         return 'Username unavailable.';
     }
@@ -184,7 +184,7 @@ users.validateInfo = function (username, email, pwstring, pwstring2) {
     }
     return null;
 };
-module.exports = async function (pool) {
+module.exports = async (pool) => {
     usersDB = new DB('users', pool);
     await usersDB.connect();
     return users;
