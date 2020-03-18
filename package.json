@@ -6,7 +6,12 @@
   "scripts": {
     "test": "test",
     "dev": "npm run compile && sh ./scripts/dev.sh",
-    "compile": "sh ./scripts/compile.sh"
+    "compile": "sh ./scripts/compile.sh",
+    "pretest": "npm install",
+    "version": "",
+    "postversion": "git push && git push --tags",
+    "u": "npm run git -- -m \"update\"",
+    "git": "npm version patch --force"
   },
   "author": "m mcwilliams",
   "license": "MIT",
@@ -52,6 +57,7 @@
   "devDependencies": {
     "@types/bcrypt": "^3.0.0",
     "@types/cookie-parser": "^1.4.2",
+    "@types/diff": "^4.0.2",
     "@types/express": "^4.17.3",
     "@types/fs-extra": "^8.1.0",
     "@types/helmet": "0.0.45",
