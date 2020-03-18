@@ -1,9 +1,11 @@
 {
 	"id" : "UUID PRIMARY KEY",
 	"user" : "UUID",
+	"username" : "VARCHAR",
 	"created" : "BIGINT",
 	"updated" : "BIGINT",
-	"path" : "VARCHAR",
+	"path" : "VARCHAR UNIQUE",
+	"pathhash" : "VARCHAR UNIQUE",
 	"src" : "VARCHAR",
 	"includes" : "JSON",
 	"rendered" : "SMALLINT DEFAULT 0",
