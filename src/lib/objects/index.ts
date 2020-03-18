@@ -41,6 +41,8 @@ objects.create = async function objects_create (user : any, object : string, sou
 	const pathHash : string = objects.hash(pathStr);
 	const doc : any = {
 		id : uuid(),
+		username : user.username,
+		userid : user.id,
 		path : pathStr,
 		pathhash : pathHash,
 		created : new Date().getTime(),
@@ -60,12 +62,12 @@ objects.create = async function objects_create (user : any, object : string, sou
 	return doc;
 };
 
-objects.index = async function objects_index (id : string) {
+objects.index = async function objects_index (user : any) {
 	let res : any;
 	let rows : any[] = [];
 
 	try {
-		res = await objectsDB.find(`user = '${id}' AND deleted = 0`);
+		res = await objectsDB.find(`userid = '${user.id}' AND deleted = 0`);
 	} catch (err) {
 		log.error(err);
 	}
@@ -96,7 +98,6 @@ objects.update = async function objects_update (user : any, object : string, sou
 	
 	log.info('Updated object ' + user.username + '/' + object);
 	return update;
-	
 };
 /**
  * Retrieve an object, using username and object id

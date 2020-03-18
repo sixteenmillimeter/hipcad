@@ -1,6 +1,6 @@
 {
 	"id" : "UUID PRIMARY KEY",
-	"user" : "UUID",
+	"userid" : "UUID",
 	"username" : "VARCHAR",
 	"created" : "BIGINT",
 	"updated" : "BIGINT",

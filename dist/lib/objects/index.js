@@ -34,6 +34,8 @@ objects.create = async function objects_create(user, object, source) {
     const pathHash = objects.hash(pathStr);
     const doc = {
         id: uuid_1.v4(),
+        username: user.username,
+        userid: user.id,
         path: pathStr,
         pathhash: pathHash,
         created: new Date().getTime(),
@@ -51,11 +53,11 @@ objects.create = async function objects_create(user, object, source) {
     }
     return doc;
 };
-objects.index = async function objects_index(id) {
+objects.index = async function objects_index(user) {
     let res;
     let rows = [];
     try {
-        res = await objectsDB.find(`user = '${id}' AND deleted = 0`);
+        res = await objectsDB.find(`userid = '${user.id}' AND deleted = 0`);
     }
     catch (err) {
         log.error(err);
