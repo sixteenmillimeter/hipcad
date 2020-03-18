@@ -4,6 +4,7 @@
  * Session module using redis and connect-redis to connect
  * @module sessionr
  */
+import { parse } from 'url';
 const session = require('express-session')
 const redis = require('redis')
 const RedisStore = require('connect-redis')(session)
@@ -25,10 +26,24 @@ const RedisStore = require('connect-redis')(session)
  */
 
  function sessionr () {
- 	const REDIS_OPTS : any = {
-		host: 				process.env.REDIS_HOST || 'localhost',
-		port: 				process.env.REDIS_PORT || 6379,
-		logErrors: 			true
+ 	let REDIS_URL : string = typeof process.env.REDIS_URL !== 'undefined' ? process.env.REDIS_URL : null;
+ 	let REDIS_OPTS : any = { logErrors : true };
+ 	let AUTH : any;
+
+ 	//for heroku
+ 	if (REDIS_URL) {
+ 		AUTH = parse(REDIS_URL);
+ 		REDIS_OPTS.user = AUTH[0];
+    	REDIS_OPTS.password = AUTH[1];
+    	REDIS_OPTS.host = AUTH.hostname;
+    	REDIS_OPTS.port = AUTH.port;
+ 	} else {
+ 		REDIS_OPTS.host = typeof process.env.REDIS_HOST !== 'undefined' ? process.env.REDIS_HOST : 'localhost';
+ 		REDIS_OPTS.port = typeof process.env.REDIS_PORT !== 'undefined' ? parseInt(process.env.REDIS_PORT) : 6379;
+ 	}
+
+ 	if (typeof process.env.REDIS_USER !== 'undefined' && process.env.REDIS_USER != 'false') {
+		REDIS_OPTS.user = process.env.REDIS_USER
 	}
 
 	if (typeof process.env.REDIS_PASS !== 'undefined' && process.env.REDIS_PASS != 'false') {
