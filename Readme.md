@@ -4,10 +4,6 @@ hipcad
 
 hipcad is hypertext scriptable CAD
 
-Look how easy it is to use:
-
-    node hipcad.js
-
 
 Features
 --------
@@ -42,5 +38,5 @@ The project is licensed under the MIT license.
 
 # TODO
 
-* Migrate off of CouchDB to Postgres
+* -Migrate off of CouchDB to Postgres-
 * Add heroku build instructions
