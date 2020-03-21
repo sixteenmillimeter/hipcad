@@ -9,11 +9,26 @@ const delay = require('delay');
 const log = require('log')('users');
 const users = {};
 let usersDB;
-users.exists = async function users_exists(usernamehash, emailhash) {
+users.existsSignup = async function users_exists(usernamehash, emailhash) {
     let exists = null;
     let res;
     try {
         res = await usersDB.find(`usernamehash = '${usernamehash}' OR emailhash = '${emailhash}'`);
+    }
+    catch (err) {
+        throw err;
+    }
+    if (res.rows && res.rows.length > 0) {
+        exists = `User already exists. Username or email is already in use.`;
+    }
+    return exists;
+};
+users.exists = async function users_exists(username) {
+    const usernamehash = users.hash(username.toLowerCase());
+    let exists = null;
+    let res;
+    try {
+        res = await usersDB.find(`usernamehash = '${usernamehash}'`);
     }
     catch (err) {
         throw err;
@@ -43,7 +58,7 @@ users.create = async function users_create(username, email, pwstring, pwstring2)
         return { error: failed };
     }
     try {
-        exists = await users.exists(userobj.usernamehash, userobj.emailhash);
+        exists = await users.existsSignup(userobj.usernamehash, userobj.emailhash);
     }
     catch (err) {
         log.error(err);

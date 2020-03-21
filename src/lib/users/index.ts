@@ -12,12 +12,30 @@ const log = require('log')('users');
 const users  : any = {};
 let usersDB : any;
 
-users.exists = async function users_exists (usernamehash : string, emailhash : string) {
+users.existsSignup = async function users_exists (usernamehash : string, emailhash : string) {
 	let exists : string = null;
 	let res : any;
 
 	try {
 		res = await usersDB.find(`usernamehash = '${usernamehash}' OR emailhash = '${emailhash}'`);
+	} catch (err) {
+		throw err;
+	}
+
+    if (res.rows && res.rows.length > 0) {
+    	exists = `User already exists. Username or email is already in use.`;
+    }
+
+    return exists;
+};
+
+users.exists= async function users_exists (username : string) {
+	const usernamehash = users.hash(username.toLowerCase());
+	let exists : string = null;
+	let res : any;
+
+	try {
+		res = await usersDB.find(`usernamehash = '${usernamehash}'`);
 	} catch (err) {
 		throw err;
 	}
@@ -54,7 +72,7 @@ users.create = async function users_create (username : string, email : string, p
 	}
 
 	try {
-		exists = await users.exists(userobj.usernamehash, userobj.emailhash);
+		exists = await users.existsSignup(userobj.usernamehash, userobj.emailhash);
 	} catch (err) {
 		log.error(err);
 	}
