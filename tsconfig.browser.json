@@ -2,12 +2,12 @@
     "compilerOptions": {
         "module": "commonjs",
         "esModuleInterop": true,
-        "target": "ES2018",
+        "target": "ES2015",
         "noImplicitAny": true,
         "moduleResolution": "node",
         "sourceMap": true,
         "removeComments" : false,
-        "outDir": "dist",
+        "outDir": "static/js",
         "baseUrl" : "./",
         "paths" : {
             "request": [
@@ -16,10 +16,10 @@
         }
     },
     "include": [
-        "./src/**/*"
+        "./browser/**/*"
     ],
     "exclude" : [
-        "browser",
+        "src",
         "node_modules",
         "test",
         "static",
