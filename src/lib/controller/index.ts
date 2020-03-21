@@ -655,12 +655,12 @@ controller.auth = function (req : ExpressRequest) : Promise<boolean> {
 };
 
 module.exports = async (pool : any) => {
-	hipcad.users = require('../users')(pool);
-	hipcad.objects = require('../objects')(pool);
+	hipcad.users = await require('../users')(pool);
+	hipcad.objects = await require('../objects')(pool);
+	hipcad.openscad = await require('../openscad')(pool);
 	hipcad.tmpl = require('../templates');
-	hipcad.mail = require('../mail')();
+	hipcad.mail = require('../mail');
 	hipcad.recaptcha = require('../recaptcha');
-	hipcad.openscad = require('../openscad')(pool);
 
 	return { hipcad, controller };
 }
