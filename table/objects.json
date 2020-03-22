@@ -2,6 +2,7 @@
 	"id" : "UUID PRIMARY KEY",
 	"userid" : "UUID",
 	"username" : "VARCHAR",
+	"usernamehash" : "VARCHAR",
 	"created" : "BIGINT",
 	"updated" : "BIGINT",
 	"path" : "VARCHAR UNIQUE",
