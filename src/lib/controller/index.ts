@@ -6,6 +6,8 @@ import { Request, Response } from 'express';
 const hipcad = require('../core')();
 const log = require('log')('app');
 
+const RECAPTCHA_PUBLIC_KEY : string = process.env.RECAPTCHA_PUBLIC_KEY;
+
 interface ExpressRequest extends Request{
 	session? : any;
 }
@@ -24,6 +26,7 @@ controller.fail = function (res : Response, msg : any, status : number, json : b
 };
 
 controller.home = async function (req : ExpressRequest, res : Response, next : Function) {
+	let page : any = {};
 	let pageData : any = {};
 	let tag : any;
 	let recaptcha : any;
@@ -43,7 +46,8 @@ controller.home = async function (req : ExpressRequest, res : Response, next : F
 		pageData.username = req.session.token.username;
 	}
 
-	pageData = {
+	page = {
+		recaptcha : RECAPTCHA_PUBLIC_KEY,
 		src: hipcad.homePage,
 		pageData: JSON.stringify(pageData),
 		title : ''
@@ -54,7 +58,7 @@ controller.home = async function (req : ExpressRequest, res : Response, next : F
 	logObj.status = 200;
 	
 	log.info('controller.home', logObj);
-	res.status(200).send(hipcad.page(hipcad.tmpl.home, pageData));
+	res.status(200).send(hipcad.page(hipcad.tmpl.home, page));
 
 	return next();
 };
@@ -101,34 +105,47 @@ controller.user.get = async function (req : ExpressRequest, res : Response, next
 		log.error(err);
 	}
 
-	if (exists) {
-		hipcad.objects.index(user);
-		if (json) {
-			page = {success: true, user : user, objects: data};
-			log.info('controller.user.get', logObj);
-			res.status(200).json(page);
-		} else {
-			pageData.type = 'user';
-			pageData.owner = {
-				username : user
-			}
-			data = data.map(function (elem : any) {
-				return elem.path;
-			});
-			page = {
-				pageData : JSON.stringify(pageData),
-				src: JSON.stringify(data, null, '\t'),
-				title : ' - ' + user
-			};
-			log.info('controller.user.get', logObj);
-			res.status(200).send(hipcad.page(hipcad.tmpl.home, page));	
-		}
-		return next();
-	} else {
+	if (!exists) {
 		logObj.status = 404;
 		log.info('controller.user.get', logObj);
 		return controller.fail(res, 'Page not found.', 404, json);
 	}
+
+	try {
+		data = await hipcad.objects.index(user);
+	} catch (err) {
+		log.error(err);
+		logObj.status = 500;
+		log.info('controller.user.get', logObj);
+		return controller.fail(res, 'Error getting user objects.', 404, json);
+	}
+	
+	if (json) {
+		page = {
+			success: true, 
+			user : user, 
+			objects: data
+		};
+		log.info('controller.user.get', logObj);
+		res.status(200).json(page);
+	} else {
+		pageData.type = 'user';
+		pageData.owner = {
+			username : user
+		}
+		data = data.map(function (elem : any) {
+			return elem.path;
+		});
+		page = {
+			recaptcha : RECAPTCHA_PUBLIC_KEY,
+			pageData : JSON.stringify(pageData),
+			src: JSON.stringify(data, null, '\t'),
+			title : ' - ' + user
+		};
+		log.info('controller.user.get', logObj);
+		res.status(200).send(hipcad.page(hipcad.tmpl.home, page));	
+	}
+	return next();
 };
 
 controller.user.create = async function (req : ExpressRequest, res : Response, next : Function) {
@@ -140,13 +157,13 @@ controller.user.create = async function (req : ExpressRequest, res : Response, n
 	let pwstring2 : string;
 	let source : any;
 	let gcapRes : any;
-	let gcapValid : boolean = false;
 	let ip : any;
 	let logObj : any = {
 		tag: '',
 		path : '/user/create',
 		status: 200
 	};
+	let gcapValid : boolean = false;
 	let valid : boolean = false;
 	let create : any = {};
 
@@ -176,6 +193,7 @@ controller.user.create = async function (req : ExpressRequest, res : Response, n
 		valid = true;
 	} else {
 		logObj.status = 400;
+		console.dir(req.body);
 		log.warn('controller.user.create', logObj);
 		return controller.fail(res, 'Invalid request', 400, json);
 	}
@@ -184,7 +202,7 @@ controller.user.create = async function (req : ExpressRequest, res : Response, n
 		gcapValid = await hipcad.recaptcha.verify(gcapRes, ip);
 	} else {
 		logObj.status = 400;
-		logObj.err = {item: 'email', msg: 'Invalid request'};
+		logObj.err = {item: 'email', msg: 'Invalid request' };
 		logObj.username = username;
 		logObj.email = email;
 		log.warn('controller.user.create', logObj);
@@ -193,11 +211,11 @@ controller.user.create = async function (req : ExpressRequest, res : Response, n
 
 	if (!gcapValid) {
 		logObj.status = 400;
-		logObj.err = {item: 'email', msg: 'Email is currently in use'};
+		logObj.err = {item: 'email', msg: 'Google Recaptcha is invalid'};
 		logObj.username = username;
 		logObj.email = email;
 		log.warn('controller.user.create', logObj);
-		return controller.fail(res, new Error('Email is currently in use'), 400, json);
+		return controller.fail(res, new Error('Google Recaptcha is invalid'), 400, json);
 	}
 
 	try {
@@ -207,6 +225,7 @@ controller.user.create = async function (req : ExpressRequest, res : Response, n
 		logObj.err = err;
 		logObj.username = username;
 		logObj.email = email;
+		log.error(err);
 		log.warn('controller.user.create', logObj);
 		return controller.fail(res, 'Error creating user', 500, json);
 	}
@@ -292,6 +311,7 @@ controller.object.get = async function (req : ExpressRequest, res : Response, ne
 			object
 		}
 		page = {
+			recaptcha : RECAPTCHA_PUBLIC_KEY,
 			pageData : JSON.stringify(pageData),
 			src: data.src,
 			title : ' - ' + username + '/' + object,

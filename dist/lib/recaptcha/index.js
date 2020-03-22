@@ -9,6 +9,7 @@ const url = 'https://www.google.com/recaptcha/api/siteverify';
 let privateKey = process.env.RECAPTCHA_PRIVATE_KEY;
 recaptcha.verify = async function (response, ip) {
     const postObj = {
+        method: 'POST',
         url,
         form: {
             secret: privateKey,
@@ -19,13 +20,13 @@ recaptcha.verify = async function (response, ip) {
     let res;
     let body;
     try {
-        res = await request_promise_1.default.post(postObj);
+        res = await request_promise_1.default(postObj);
     }
     catch (err) {
         throw err;
     }
     try {
-        body = JSON.parse(res.body);
+        body = JSON.parse(res);
     }
     catch (e) {
         throw new Error('Invalid response');

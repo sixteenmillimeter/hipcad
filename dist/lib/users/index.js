@@ -1,9 +1,13 @@
 'use strict';
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const crypto_1 = require("crypto");
 const bcrypt_1 = require("bcrypt");
 const uuid_1 = require("uuid");
-const iz = require('iz');
+const isEmail_1 = __importDefault(require("validator/lib/isEmail"));
+const isLength_1 = __importDefault(require("validator/lib/isLength"));
 const DB = require('db');
 const delay = require('delay');
 const log = require('log')('users');
@@ -185,16 +189,16 @@ users.validateInfo = function users_validateInfo(username, email, pwstring, pwst
     if (users.prohibit.indexOf(username) !== -1) {
         return 'Username unavailable.';
     }
-    if (!iz.maxLength(username, 256)) {
+    if (!isLength_1.default(username, { min: 1, max: 256 })) {
         return 'Username too long.';
     }
-    if (!iz.email(email)) {
+    if (!isEmail_1.default(email)) {
         return 'Email is invalid.';
     }
     if (pwstring !== pwstring2) {
         return 'Passwords do not match.';
     }
-    if (!iz.minLength(pwstring, 8)) {
+    if (!isLength_1.default(pwstring, { min: 8, max: 256 })) {
         return 'Passwords is too short. Minimum length is 8 characters.';
     }
     return null;

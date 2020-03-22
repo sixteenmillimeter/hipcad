@@ -8,6 +8,7 @@ let privateKey : string = process.env.RECAPTCHA_PRIVATE_KEY;
 
 recaptcha.verify = async function (response : string, ip : string) {
 	const postObj = {
+		method : 'POST',
 		url, 
 		form: {
 			secret : privateKey,
@@ -19,13 +20,13 @@ recaptcha.verify = async function (response : string, ip : string) {
 	let body : any;
 
 	try {
-		res = await request.post(postObj);
+		res = await request(postObj);
 	} catch (err) {
 		throw err;
 	}
 
-	try{
-		body = JSON.parse(res.body);
+	try {
+		body = JSON.parse(res);
 	} catch (e) {
 		throw new Error('Invalid response');
 	}

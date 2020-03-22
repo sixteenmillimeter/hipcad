@@ -3,8 +3,9 @@
 import { createHash } from 'crypto';
 import { hash, compare } from 'bcrypt';
 import { v4 as uuid } from 'uuid';
+import isEmail from 'validator/lib/isEmail';
+import isLength from 'validator/lib/isLength';
 
-const iz = require('iz');
 const DB = require('db');
 const delay = require('delay');
 const log = require('log')('users');
@@ -217,16 +218,16 @@ users.validateInfo = function users_validateInfo (username : string, email: stri
 	if (users.prohibit.indexOf(username) !== -1) {
 		return 'Username unavailable.'
 	}
-	if (!iz.maxLength(username, 256)) {
+	if (!isLength(username, { min : 1, max : 256 })) {
 		return 'Username too long.';
 	}
-	if (!iz.email(email)) {
+	if (!isEmail(email)) {
 		return 'Email is invalid.';
 	}
 	if (pwstring !== pwstring2) {
 		return 'Passwords do not match.';
 	}
-	if (!iz.minLength(pwstring, 8)) {
+	if (!isLength(pwstring, { min : 8, max : 256 })) {
 		return  'Passwords is too short. Minimum length is 8 characters.';
 	}
 	return null;
