@@ -1,6 +1,6 @@
 {
   "name": "hipcad",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Production version of site",
   "main": "dist/index.js",
   "scripts": {
@@ -58,11 +58,14 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^3.0.0",
+    "@types/bootbox": "^5.2.0",
+    "@types/codemirror": "0.0.88",
     "@types/cookie-parser": "^1.4.2",
     "@types/diff": "^4.0.2",
     "@types/express": "^4.17.3",
     "@types/fs-extra": "^8.1.0",
     "@types/helmet": "0.0.45",
+    "@types/jquery": "^3.3.33",
     "@types/node": "^13.9.1",
     "@types/request-promise": "^4.1.45",
     "@types/uuid": "^7.0.1",
