@@ -29,10 +29,10 @@ tmpl.assign = function (name, path, callback) {
 	} else {
 		tmpl.update(name, path);
 	}
-	tmpl.watchBetter(path, function () {
+	/*tmpl.watchBetter(path, function () {
 		log.warn('Updated during runtime: ' + name + ' @ ' + path);
 		tmpl.update(name, path);
-	});
+	});*/
 };
 
 tmpl.update = function (name, path, callback) {
