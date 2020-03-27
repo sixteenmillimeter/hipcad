@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const uuid_1 = require("uuid");
 const hipcad = require('../core')();
 const log = require('log')('app');
+const Mail = require('../mail');
 const RECAPTCHA_PUBLIC_KEY = process.env.RECAPTCHA_PUBLIC_KEY;
 const controller = {};
 controller.fail = function (res, msg, status, json) {
@@ -143,6 +144,8 @@ controller.user.create = async function (req, res, next) {
     let gcapValid = false;
     let valid = false;
     let create = {};
+    let subject;
+    let body;
     //hipcad.tag(req, res, tagUserCb);
     //tag = tagOutput;
     //logObj.tag = tag;
@@ -208,7 +211,14 @@ controller.user.create = async function (req, res, next) {
         return controller.fail(res, 'Error creating user', 400, json);
     }
     log.info('controller.user.create', logObj);
-    hipcad.mail.send(username, email, 'Welcome to hipcad.com!', 'Thanks for signing up for hipcad. Please feel free to email us with comments or questions.', null);
+    subject = 'Welcome to hipcad.com!';
+    body = 'Thanks for signing up for hipcad. Please feel free to email us with comments or questions.';
+    try {
+        hipcad.mail.send([email], subject, body);
+    }
+    catch (err) {
+        log.error(err);
+    }
     if (json) {
         res.status(200).json({ success: true });
     }
@@ -610,7 +620,7 @@ module.exports = async (pool) => {
     hipcad.objects = await require('../objects')(pool);
     hipcad.openscad = await require('../openscad')(pool);
     hipcad.tmpl = require('../templates');
-    hipcad.mail = require('../mail');
+    hipcad.mail = new Mail();
     hipcad.recaptcha = require('../recaptcha');
     return { hipcad, controller };
 };

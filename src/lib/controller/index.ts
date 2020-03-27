@@ -5,6 +5,7 @@ import { Request, Response } from 'express';
 
 const hipcad = require('../core')();
 const log = require('log')('app');
+const Mail = require('../mail');
 
 const RECAPTCHA_PUBLIC_KEY : string = process.env.RECAPTCHA_PUBLIC_KEY;
 
@@ -689,7 +690,7 @@ module.exports = async (pool : any) => {
 	hipcad.objects = await require('../objects')(pool);
 	hipcad.openscad = await require('../openscad')(pool);
 	hipcad.tmpl = require('../templates');
-	hipcad.mail = require('../mail');
+	hipcad.mail = new Mail();
 	hipcad.recaptcha = require('../recaptcha');
 
 	return { hipcad, controller };
