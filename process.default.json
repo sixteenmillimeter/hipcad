@@ -24,6 +24,12 @@
 				"RECAPTCHA_PUBLIC_KEY"  : "",
 				"RECAPTCHA_PRIVATE_KEY" : "",
 
+				"SMTP_FROM" : "",
+				"SMTP_USER" : "",
+				"SMTP_PASSWORD" : "",
+				"SMTP_PORT" : 587,
+				"SMTP_HOST" : "",
+
 				"WORKERS" : 1
 			}
 		}

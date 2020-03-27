@@ -166,6 +166,8 @@ controller.user.create = async function (req : ExpressRequest, res : Response, n
 	let gcapValid : boolean = false;
 	let valid : boolean = false;
 	let create : any = {};
+	let subject : string;
+	let body : string;
 
 	//hipcad.tag(req, res, tagUserCb);
 	//tag = tagOutput;
@@ -238,7 +240,15 @@ controller.user.create = async function (req : ExpressRequest, res : Response, n
 	}
 
 	log.info('controller.user.create', logObj);
-	hipcad.mail.send(username, email, 'Welcome to hipcad.com!', 'Thanks for signing up for hipcad. Please feel free to email us with comments or questions.', null);
+
+	subject = 'Welcome to hipcad.com!';
+	body = 'Thanks for signing up for hipcad. Please feel free to email us with comments or questions.';
+	
+	try {
+		hipcad.mail.send([ email ], subject, body);
+	} catch (err) {
+		log.error(err);
+	}
 	
 	if (json) {
 		res.status(200).json({ success: true });
