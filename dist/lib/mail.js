@@ -33,7 +33,7 @@ class Mail {
             this._client = this._sesInit(options);
         }
         else {
-            console.error(new Error('No email provider defined'));
+            log.error(new Error('No email provider defined'));
         }
     }
     /**
@@ -178,7 +178,7 @@ class Mail {
             API_KEY = process.env.SPARKPOST_API_KEY;
         }
         else {
-            return console.error(new Error('No SPARKPOST_API_KEY found'));
+            return log.error(new Error('No SPARKPOST_API_KEY found'));
         }
         return new this.SparkPost(API_KEY);
     }
@@ -242,7 +242,7 @@ class Mail {
             config.accessKeyId = process.env.SES_ACCESS_KEY_ID;
         }
         else {
-            return console.error(new Error('No accessKeyId defined for SES process'));
+            return log.error(new Error('No accessKeyId defined for SES process'));
         }
         if (typeof options.SES_SECRET_ACCESS_KEY !== 'undefined') {
             config.secretAccessKey = options.SES_SECRET_ACCESS_KEY;
@@ -251,7 +251,7 @@ class Mail {
             config.secretAccessKey = process.env.SES_SECRET_ACCESS_KEY;
         }
         else {
-            return console.error(new Error('No secretAccessKey defined for SES process'));
+            return log.error(new Error('No secretAccessKey defined for SES process'));
         }
         if (typeof options.SES_REGION !== 'undefined') {
             config.region = options.SES_REGION;
@@ -261,7 +261,7 @@ class Mail {
         }
         else {
             //config.region = 'us-east-1' //default to US East 1
-            return console.error(new Error('No region defined for SES process'));
+            return log.error(new Error('No region defined for SES process'));
         }
         config.apiVersion = '2010-12-01';
         this.aws.config.update(config);
@@ -325,7 +325,7 @@ class Mail {
             config.auth.user = process.env.GMAIL_USER;
         }
         else {
-            return console.error(new Error('No GMAIL_USER found'));
+            return log.error(new Error('No GMAIL_USER found'));
         }
         if (typeof options.GMAIL_PASSWORD !== 'undefined') {
             config.auth.pass = options.GMAIL_PASSWORD;
@@ -334,7 +334,7 @@ class Mail {
             config.auth.pass = process.env.GMAIL_PASSWORD;
         }
         else {
-            return console.error(new Error('No GMAIL_PASSWORD found'));
+            return log.error(new Error('No GMAIL_PASSWORD found'));
         }
         return this.nodemailer.createTransport(config);
     }
@@ -387,7 +387,7 @@ class Mail {
             config.auth.user = process.env.SMTP_USER;
         }
         else {
-            return console.error(new Error('No SMTP_USER found'));
+            return log.error(new Error('No SMTP_USER found'));
         }
         if (typeof options.SMTP_PASSWORD !== 'undefined') {
             config.auth.pass = options.SMTP_PASSWORD;
@@ -396,7 +396,7 @@ class Mail {
             config.auth.pass = process.env.SMTP_PASSWORD;
         }
         else {
-            return console.error(new Error('No SMTP_PASSWORD found'));
+            return log.error(new Error('No SMTP_PASSWORD found'));
         }
         if (typeof options.SMTP_HOST !== 'undefined') {
             config.host = options.SMTP_HOST;
@@ -405,7 +405,7 @@ class Mail {
             config.host = process.env.SMTP_HOST;
         }
         else {
-            return console.error(new Error('No SMTP_HOST found'));
+            return log.error(new Error('No SMTP_HOST found'));
         }
         if (typeof options.SMTP_PORT !== 'undefined') {
             config.port = options.SMTP_PORT;
