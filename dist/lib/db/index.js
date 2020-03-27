@@ -272,6 +272,7 @@ class DB {
         return new Promise(async (resolve, reject) => {
             let client;
             let res;
+            let pos;
             try {
                 client = await this._pool.connect();
             }
@@ -282,7 +283,16 @@ class DB {
                 res = await client.query(query);
             }
             catch (err) {
-                client.release(err);
+                try {
+                    await client.release(err);
+                } catch (err) {
+                    //
+                }
+                if (err.code && err.code === '42601') {
+                    pos = parseInt(err.position);
+                    err.positionFailure = query.slice( pos - 10, pos + 10);
+                    err.query = query;
+                }
                 return reject(err);
             }
             try {
