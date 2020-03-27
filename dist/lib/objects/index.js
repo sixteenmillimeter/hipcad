@@ -53,11 +53,12 @@ objects.create = async function objects_create(user, object, source) {
     }
     return doc;
 };
-objects.index = async function objects_index(user) {
+objects.index = async function objects_index(username) {
+    const usernamehash = objects.hash(username.toLowerCase());
     let res;
     let rows = [];
     try {
-        res = await objectsDB.find(`userid = '${user.id}' AND deleted = 0`);
+        res = await objectsDB.find(`usernamehash = '${usernamehash}' AND deleted = 0`);
     }
     catch (err) {
         log.error(err);

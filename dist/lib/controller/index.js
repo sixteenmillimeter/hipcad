@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const uuid_1 = require("uuid");
 const hipcad = require('../core')();
 const log = require('log')('app');
+const RECAPTCHA_PUBLIC_KEY = process.env.RECAPTCHA_PUBLIC_KEY;
 const controller = {};
 controller.fail = function (res, msg, status, json) {
     var page;
@@ -16,6 +17,7 @@ controller.fail = function (res, msg, status, json) {
     }
 };
 controller.home = async function (req, res, next) {
+    let page = {};
     let pageData = {};
     let tag;
     let recaptcha;
@@ -32,7 +34,8 @@ controller.home = async function (req, res, next) {
         pageData.session = true;
         pageData.username = req.session.token.username;
     }
-    pageData = {
+    page = {
+        recaptcha: RECAPTCHA_PUBLIC_KEY,
         src: hipcad.homePage,
         pageData: JSON.stringify(pageData),
         title: ''
@@ -41,7 +44,7 @@ controller.home = async function (req, res, next) {
     logObj.path = '/';
     logObj.status = 200;
     log.info('controller.home', logObj);
-    res.status(200).send(hipcad.page(hipcad.tmpl.home, pageData));
+    res.status(200).send(hipcad.page(hipcad.tmpl.home, page));
     return next();
 };
 controller.user = {};
@@ -80,36 +83,47 @@ controller.user.get = async function (req, res, next) {
     catch (err) {
         log.error(err);
     }
-    if (exists) {
-        hipcad.objects.index(user);
-        if (json) {
-            page = { success: true, user: user, objects: data };
-            log.info('controller.user.get', logObj);
-            res.status(200).json(page);
-        }
-        else {
-            pageData.type = 'user';
-            pageData.owner = {
-                username: user
-            };
-            data = data.map(function (elem) {
-                return elem.path;
-            });
-            page = {
-                pageData: JSON.stringify(pageData),
-                src: JSON.stringify(data, null, '\t'),
-                title: ' - ' + user
-            };
-            log.info('controller.user.get', logObj);
-            res.status(200).send(hipcad.page(hipcad.tmpl.home, page));
-        }
-        return next();
-    }
-    else {
+    if (!exists) {
         logObj.status = 404;
         log.info('controller.user.get', logObj);
         return controller.fail(res, 'Page not found.', 404, json);
     }
+    try {
+        data = await hipcad.objects.index(user);
+    }
+    catch (err) {
+        log.error(err);
+        logObj.status = 500;
+        log.info('controller.user.get', logObj);
+        return controller.fail(res, 'Error getting user objects.', 404, json);
+    }
+    if (json) {
+        page = {
+            success: true,
+            user: user,
+            objects: data
+        };
+        log.info('controller.user.get', logObj);
+        res.status(200).json(page);
+    }
+    else {
+        pageData.type = 'user';
+        pageData.owner = {
+            username: user
+        };
+        data = data.map(function (elem) {
+            return elem.path;
+        });
+        page = {
+            recaptcha: RECAPTCHA_PUBLIC_KEY,
+            pageData: JSON.stringify(pageData),
+            src: JSON.stringify(data, null, '\t'),
+            title: ' - ' + user
+        };
+        log.info('controller.user.get', logObj);
+        res.status(200).send(hipcad.page(hipcad.tmpl.home, page));
+    }
+    return next();
 };
 controller.user.create = async function (req, res, next) {
     const json = controller.json(req);
@@ -120,13 +134,13 @@ controller.user.create = async function (req, res, next) {
     let pwstring2;
     let source;
     let gcapRes;
-    let gcapValid = false;
     let ip;
     let logObj = {
         tag: '',
         path: '/user/create',
         status: 200
     };
+    let gcapValid = false;
     let valid = false;
     let create = {};
     //hipcad.tag(req, res, tagUserCb);
@@ -152,6 +166,7 @@ controller.user.create = async function (req, res, next) {
     }
     else {
         logObj.status = 400;
+        console.dir(req.body);
         log.warn('controller.user.create', logObj);
         return controller.fail(res, 'Invalid request', 400, json);
     }
@@ -168,11 +183,11 @@ controller.user.create = async function (req, res, next) {
     }
     if (!gcapValid) {
         logObj.status = 400;
-        logObj.err = { item: 'email', msg: 'Email is currently in use' };
+        logObj.err = { item: 'email', msg: 'Google Recaptcha is invalid' };
         logObj.username = username;
         logObj.email = email;
         log.warn('controller.user.create', logObj);
-        return controller.fail(res, new Error('Email is currently in use'), 400, json);
+        return controller.fail(res, new Error('Google Recaptcha is invalid'), 400, json);
     }
     try {
         create = await hipcad.users.create(username, email, pwstring, pwstring2);
@@ -182,6 +197,7 @@ controller.user.create = async function (req, res, next) {
         logObj.err = err;
         logObj.username = username;
         logObj.email = email;
+        log.error(err);
         log.warn('controller.user.create', logObj);
         return controller.fail(res, 'Error creating user', 500, json);
     }
@@ -258,6 +274,7 @@ controller.object.get = async function (req, res, next) {
             object
         };
         page = {
+            recaptcha: RECAPTCHA_PUBLIC_KEY,
             pageData: JSON.stringify(pageData),
             src: data.src,
             title: ' - ' + username + '/' + object,

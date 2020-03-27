@@ -455,7 +455,8 @@ function signup () {
                 				'<input id="signupPwstring" name="pwstring" type="password" placeholder="Password" class="form-control input-md" style="margin-bottom: 20px;"> ' +
                 				'<input id="signupPwstring2" name="signupPwstring2" type="password" placeholder="Password again" class="form-control input-md" style="margin-bottom: 20px;"> ' +
                 				'<script src="https://www.google.com/recaptcha/api.js"></script>' +
-                				'<div class="g-recaptcha" data-sitekey="6Le-iRITAAAAALw-YpT23U8-SSD5DGZnUOSukorI"></div>' +
+                				//@ts-ignore
+                				'<div class="g-recaptcha" data-sitekey="' + RECAPTCHA_SITE_KEY + '"></div>' +
                 				'<div id="loginLink">Already have an account? <a href="#login">Login</a>' +
                 			'</div> ' +
                 		'</form> </div> </div>',
@@ -464,14 +465,11 @@ function signup () {
                     label: "Sign up",
                     className: "btn-success",
                     callback: function () {
-
                     	if ($('#signupEmail').val() === '') {
                     		return false;
                     	}
 
-
-
-                    	var query = {
+                    	const query : any = {
                     		url : '/user/create?json=true',
                     		type : 'POST',
                     		data : {
@@ -479,7 +477,7 @@ function signup () {
                     			username : $('#signupUser').val(),
                     			pwstring : $('#signupPwstring').val(),
                     			pwstring2 : $('#signupPwstring2').val(),
-                    			'g-recaptcha-response' : $('#g-recaptcha-response').val()
+                    			'g-recaptcha-response' : grecaptcha.getResponse()
                     		},
                     		success : function () {
                     			bootbox.hideAll();
