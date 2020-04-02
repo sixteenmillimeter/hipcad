@@ -5,6 +5,8 @@ const hipcad = require('../core')();
 const log = require('log')('app');
 const Mail = require('../mail');
 const RECAPTCHA_PUBLIC_KEY = process.env.RECAPTCHA_PUBLIC_KEY;
+const POSTHOG_URL = process.env.POSTHOG_URL;
+const POSTHOG_ID = process.env.POSTHOG_ID;
 const controller = {};
 controller.fail = function (res, msg, status, json) {
     var page;
@@ -21,7 +23,6 @@ controller.home = async function (req, res, next) {
     let page = {};
     let pageData = {};
     let tag;
-    let recaptcha;
     let logObj = {};
     let auth = false;
     //hipcad.tag(req, res, tagUserCb);
@@ -36,6 +37,8 @@ controller.home = async function (req, res, next) {
         pageData.username = req.session.token.username;
     }
     page = {
+        posthog_url: POSTHOG_URL,
+        posthog_id: POSTHOG_ID,
         recaptcha: RECAPTCHA_PUBLIC_KEY,
         src: hipcad.homePage,
         pageData: JSON.stringify(pageData),
@@ -55,7 +58,6 @@ controller.user.get = async function (req, res, next) {
     let page;
     let pageData = {};
     let tag;
-    let recaptcha;
     let logObj = {
         path: '/' + user,
         tag: '',
@@ -116,6 +118,8 @@ controller.user.get = async function (req, res, next) {
             return elem.path;
         });
         page = {
+            posthog_url: POSTHOG_URL,
+            posthog_id: POSTHOG_ID,
             recaptcha: RECAPTCHA_PUBLIC_KEY,
             pageData: JSON.stringify(pageData),
             src: JSON.stringify(data, null, '\t'),
@@ -284,6 +288,8 @@ controller.object.get = async function (req, res, next) {
             object
         };
         page = {
+            posthog_url: POSTHOG_URL,
+            posthog_id: POSTHOG_ID,
             recaptcha: RECAPTCHA_PUBLIC_KEY,
             pageData: JSON.stringify(pageData),
             src: data.src,

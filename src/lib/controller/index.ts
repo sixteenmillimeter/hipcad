@@ -8,6 +8,8 @@ const log = require('log')('app');
 const Mail = require('../mail');
 
 const RECAPTCHA_PUBLIC_KEY : string = process.env.RECAPTCHA_PUBLIC_KEY;
+const POSTHOG_URL : string = process.env.POSTHOG_URL;
+const POSTHOG_ID : string = process.env.POSTHOG_ID;
 
 interface ExpressRequest extends Request{
 	session? : any;
@@ -30,7 +32,6 @@ controller.home = async function (req : ExpressRequest, res : Response, next : F
 	let page : any = {};
 	let pageData : any = {};
 	let tag : any;
-	let recaptcha : any;
 	let logObj : any = {};
 	let auth : boolean = false;
 
@@ -48,6 +49,8 @@ controller.home = async function (req : ExpressRequest, res : Response, next : F
 	}
 
 	page = {
+		posthog_url : POSTHOG_URL,
+		posthog_id : POSTHOG_ID,
 		recaptcha : RECAPTCHA_PUBLIC_KEY,
 		src: hipcad.homePage,
 		pageData: JSON.stringify(pageData),
@@ -73,7 +76,6 @@ controller.user.get = async function (req : ExpressRequest, res : Response, next
 	let page: any;
 	let pageData : any = {};
 	let tag : any;
-	let recaptcha: any;
 	let logObj : any = {
 		path : '/' + user,
 		tag : '',
@@ -138,6 +140,8 @@ controller.user.get = async function (req : ExpressRequest, res : Response, next
 			return elem.path;
 		});
 		page = {
+			posthog_url : POSTHOG_URL,
+			posthog_id : POSTHOG_ID,
 			recaptcha : RECAPTCHA_PUBLIC_KEY,
 			pageData : JSON.stringify(pageData),
 			src: JSON.stringify(data, null, '\t'),
@@ -322,6 +326,8 @@ controller.object.get = async function (req : ExpressRequest, res : Response, ne
 			object
 		}
 		page = {
+			posthog_url : POSTHOG_URL,
+			posthog_id : POSTHOG_ID,
 			recaptcha : RECAPTCHA_PUBLIC_KEY,
 			pageData : JSON.stringify(pageData),
 			src: data.src,
