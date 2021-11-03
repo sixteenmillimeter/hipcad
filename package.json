@@ -52,7 +52,7 @@
     "sparkpost": "^2.1.4",
     "squel": "^5.13.0",
     "uuid": "^7.0.2",
-    "validator": "^12.2.0",
+    "validator": "^13.7.0",
     "winston": "^2.4.4",
     "winston-papertrail": "^1.0.5"
   },
