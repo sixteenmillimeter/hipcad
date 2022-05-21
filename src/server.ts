@@ -44,9 +44,8 @@ app.get('/robots.txt', function(req : any, res : any, next : Function) {
 });
 
 module.exports = async function (pool : any) {
-
 	const { hipcad, controller } = await require('./lib/controller')(pool);
-
+	
 	hipcad.tmpl.assign('home', './views/index.html');
 	hipcad.tmpl.assign('err', './views/err.html');
 	hipcad.tmpl.assign('user', './views/user.html');
@@ -71,7 +70,7 @@ module.exports = async function (pool : any) {
 
 	//app.get('/:user/:object/render', controller.object.render);
 
-	if (hipcad.cmd('-d', '--dev')) {
+	if (DEBUG) {
 	    log.info('Running in development mode');
 	    hipcad.dev = true;
 	} else {

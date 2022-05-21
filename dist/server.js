@@ -54,7 +54,7 @@ module.exports = async function (pool) {
     //app.put('/:user/:object', controller.object.update);
     //app.delete('/:user/:object', controller.object.destroy);
     //app.get('/:user/:object/render', controller.object.render);
-    if (hipcad.cmd('-d', '--dev')) {
+    if (DEBUG) {
         log.info('Running in development mode');
         hipcad.dev = true;
     }
