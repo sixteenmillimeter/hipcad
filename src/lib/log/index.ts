@@ -34,6 +34,9 @@ function createLog (label : string, filename : string = null) {
         winston.format.json()
     );
     let papertrailOpts : any;
+    if (typeof process.env.LOGS !== 'undefined') {
+        filename = process.env.LOGS;
+    }
     if (filename !== null) {
         transports.push( new (winston.transports.File)({ label, filename, timestamp : true }) );
     }

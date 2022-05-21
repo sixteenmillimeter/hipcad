@@ -24,6 +24,9 @@ function createLog(label, filename = null) {
         format: 'YYYY-MM-DD HH:mm:ss.SSS'
     }), winston.format.json());
     let papertrailOpts;
+    if (typeof process.env.LOGS !== 'undefined') {
+        filename = process.env.LOGS;
+    }
     if (filename !== null) {
         transports.push(new (winston.transports.File)({ label, filename, timestamp: true }));
     }
