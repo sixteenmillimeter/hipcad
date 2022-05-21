@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const uuid_1 = require("uuid");
 const hipcad = require('../core')();
 const log = require('log')('app');
-const Mail = require('../mail');
+const Mail = require('mail');
 const RECAPTCHA_PUBLIC_KEY = process.env.RECAPTCHA_PUBLIC_KEY;
 const POSTHOG_URL = process.env.POSTHOG_URL;
 const POSTHOG_ID = process.env.POSTHOG_ID;
@@ -130,6 +130,34 @@ controller.user.get = async function (req, res, next) {
     }
     return next();
 };
+controller.user.validate = function (body, ip) {
+    const keys = ['username', 'pwstring', 'pwstring2', 'email', 'g-recaptcha-response'];
+    let success = false;
+    if (typeof body === 'undefined') {
+        log.warn('controller.user.validate', { reason: 'Form body is undefined' });
+        return success;
+    }
+    for (let key of keys) {
+        if (typeof body[key] === 'undefined') {
+            log.warn('controller.user.validate', { reason: `${key} is undefined` });
+            return success;
+        }
+    }
+    if (typeof ip === 'undefined') {
+        log.warn('controller.user.validate', { reason: 'IP address is undefined' });
+        return success;
+    }
+    if (body['g-recaptcha-response'].length === 0) {
+        log.warn('controller.user.validate', { reason: 'Captcha response is empty' });
+        return success;
+    }
+    if (body['pwstring'] !== body['pwstring2']) {
+        log.warn('controller.user.validate', { reason: 'Passwords do not match' });
+        return success;
+    }
+    success = true;
+    return success;
+};
 controller.user.create = async function (req, res, next) {
     const json = controller.json(req);
     let tag;
@@ -138,14 +166,14 @@ controller.user.create = async function (req, res, next) {
     let pwstring;
     let pwstring2;
     let source;
-    let gcapRes;
+    let capRes;
     let ip;
     let logObj = {
         tag: '',
         path: '/user/create',
         status: 200
     };
-    let gcapValid = false;
+    let capValid = false;
     let valid = false;
     let create = {};
     let subject;
@@ -156,45 +184,40 @@ controller.user.create = async function (req, res, next) {
     //controller.auth(req, req, authCb);
     ip = req.connection.remoteAddress || req.headers['x-real-ip'];
     logObj.ip = ip;
-    if (req.body
-        && req.body.username
-        && req.body.pwstring
-        && req.body.pwstring2
-        && req.body.email
-        && req.body['g-recaptcha-response']
-        && req.body['g-recaptcha-response'].length !== 0
-        && req.connection.remoteAddress || req.headers['x-real-ip']) {
+    if (controller.user.validate(req.body, ip)) {
         username = req.body.username;
         pwstring = req.body.pwstring;
         pwstring2 = req.body.pwstring2;
         email = req.body.email;
-        gcapRes = req.body['g-recaptcha-response'];
+        capRes = req.body['g-recaptcha-response'];
         valid = true;
     }
     else {
         logObj.status = 400;
-        console.dir(req.body);
-        log.warn('controller.user.create', logObj);
+        logObj.reason = 'Form is invalid';
+        log.error('controller.user.create', logObj);
+        console.log(JSON.stringify(req.body));
         return controller.fail(res, 'Invalid request', 400, json);
     }
     if (valid) {
-        gcapValid = await hipcad.recaptcha.verify(gcapRes, ip);
+        capValid = await hipcad.recaptcha.verify(capRes, ip);
     }
     else {
         logObj.status = 400;
         logObj.err = { item: 'email', msg: 'Invalid request' };
         logObj.username = username;
         logObj.email = email;
-        log.warn('controller.user.create', logObj);
+        logObj.reason = 'Captcha verification failed';
+        log.error('controller.user.create', logObj);
         return controller.fail(res, new Error('Invalid request'), 400, json);
     }
-    if (!gcapValid) {
+    if (!capValid) {
         logObj.status = 400;
-        logObj.err = { item: 'email', msg: 'Google Recaptcha is invalid' };
         logObj.username = username;
         logObj.email = email;
-        log.warn('controller.user.create', logObj);
-        return controller.fail(res, new Error('Google Recaptcha is invalid'), 400, json);
+        logObj.reason = 'Captcha is invalid';
+        log.error('controller.user.create', logObj);
+        return controller.fail(res, new Error('Captcha is invalid'), 400, json);
     }
     try {
         create = await hipcad.users.create(username, email, pwstring, pwstring2);
@@ -204,14 +227,14 @@ controller.user.create = async function (req, res, next) {
         logObj.err = err;
         logObj.username = username;
         logObj.email = email;
-        log.error(err);
-        log.warn('controller.user.create', logObj);
+        logObj.reason = err.toString();
+        log.error('controller.user.create', logObj);
         return controller.fail(res, 'Error creating user', 500, json);
     }
     if (!create || create.error) {
         logObj.status = 400;
-        logObj.err = { item: 'email', msg: create.error };
-        log.warn('controller.user.create', logObj);
+        logObj.reason = create.error || 'User create failed';
+        log.error('controller.user.create', logObj);
         return controller.fail(res, 'Error creating user', 400, json);
     }
     log.info('controller.user.create', logObj);
@@ -221,9 +244,18 @@ controller.user.create = async function (req, res, next) {
         hipcad.mail.send([email], subject, body);
     }
     catch (err) {
-        log.error(err);
+        let logObj2 = {
+            reason: 'Sending mail failed',
+            err: err.toString()
+        };
+        log.error('controller.user.create', logObj2);
     }
     if (json) {
+        logObj.status = 200;
+        logObj.email = email;
+        logObj.username = username;
+        logObj.action = 'User created';
+        log.info('controller.user.create', logObj);
         res.status(200).json({ success: true });
     }
     else {
@@ -477,7 +509,7 @@ controller.object.render = async function (req, res, next) {
     catch (err) {
         logObj.status = 500;
         log.error(err);
-        log.warn('controller.object.render', logObj);
+        log.error('controller.object.render', logObj);
         return controller.fail(res, 'Server error.', 500, json);
     }
     try {
@@ -542,7 +574,7 @@ controller.login = async function (req, res, next) {
         return controller.fail(res, userobj.error, 401.1, json);
     }
     tokenObj = {
-        id: uuid_1.v4(),
+        id: (0, uuid_1.v4)(),
         user: userobj.id,
         tag: tag,
         username: userobj.username,
@@ -626,7 +658,7 @@ module.exports = async (pool) => {
     hipcad.objects = await require('../objects')(pool);
     hipcad.openscad = await require('../openscad')(pool);
     hipcad.tmpl = require('../templates');
-    hipcad.mail = new Mail();
+    hipcad.mail = new Mail({ log: require('log')('mail') });
     hipcad.recaptcha = require('../recaptcha');
     return { hipcad, controller };
 };

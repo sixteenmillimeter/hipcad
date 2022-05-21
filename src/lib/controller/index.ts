@@ -5,7 +5,7 @@ import { Request, Response } from 'express';
 
 const hipcad = require('../core')();
 const log = require('log')('app');
-const Mail = require('../mail');
+const Mail = require('mail');
 
 const RECAPTCHA_PUBLIC_KEY : string = process.env.RECAPTCHA_PUBLIC_KEY;
 const POSTHOG_URL : string = process.env.POSTHOG_URL;
@@ -153,6 +153,42 @@ controller.user.get = async function (req : ExpressRequest, res : Response, next
 	return next();
 };
 
+controller.user.validate = function (body : any, ip : string) {
+	const keys : string[] = [ 'username', 'pwstring', 'pwstring2', 'email', 'g-recaptcha-response' ];
+	let success : boolean = false;
+
+	if (typeof body === 'undefined') {
+		log.warn('controller.user.validate', { reason : 'Form body is undefined' });
+		return success;
+	}
+
+	for (let key of keys) {
+		if (typeof body[key] === 'undefined') {
+			log.warn('controller.user.validate', { reason : `${key} is undefined` });
+			return success;
+		}
+	}
+
+	if (typeof ip === 'undefined') {
+		log.warn('controller.user.validate', { reason : 'IP address is undefined' });
+		return success;
+	}
+
+	if (body['g-recaptcha-response'].length === 0) {
+		log.warn('controller.user.validate', { reason : 'Captcha response is empty' });
+		return success;
+	}
+
+	if (body['pwstring'] !== body['pwstring2']) {
+		log.warn('controller.user.validate', { reason : 'Passwords do not match' });
+		return success;
+	}
+
+	success = true;
+
+	return success;
+}
+
 controller.user.create = async function (req : ExpressRequest, res : Response, next : Function) {
 	const json : boolean = controller.json(req);
 	let tag : any
@@ -161,14 +197,14 @@ controller.user.create = async function (req : ExpressRequest, res : Response, n
 	let pwstring : string;
 	let pwstring2 : string;
 	let source : any;
-	let gcapRes : any;
+	let capRes : any;
 	let ip : any;
 	let logObj : any = {
 		tag: '',
 		path : '/user/create',
 		status: 200
 	};
-	let gcapValid : boolean = false;
+	let capValid : boolean = false;
 	let valid : boolean = false;
 	let create : any = {};
 	let subject : string;
@@ -182,47 +218,41 @@ controller.user.create = async function (req : ExpressRequest, res : Response, n
 	ip = req.connection.remoteAddress || req.headers['x-real-ip'];
 	logObj.ip = ip;
 
-	if (req.body
-		&& req.body.username
-		&& req.body.pwstring
-		&& req.body.pwstring2
-		&& req.body.email
-		&& req.body['g-recaptcha-response']
-		&& req.body['g-recaptcha-response'].length !== 0
-		&& req.connection.remoteAddress || req.headers['x-real-ip']) {
+	if (controller.user.validate(req.body, ip)) {
 
 		username = req.body.username;
 		pwstring = req.body.pwstring;
 		pwstring2 = req.body.pwstring2;
 		email = req.body.email;
 
-		gcapRes = req.body['g-recaptcha-response'];
+		capRes = req.body['g-recaptcha-response'];
 		valid = true;
 	} else {
 		logObj.status = 400;
-		console.dir(req.body);
-		log.warn('controller.user.create', logObj);
+		logObj.reason = 'Form is invalid';
+		log.error('controller.user.create', logObj);
 		return controller.fail(res, 'Invalid request', 400, json);
 	}
 
 	if (valid) {
-		gcapValid = await hipcad.recaptcha.verify(gcapRes, ip);
+		capValid = await hipcad.recaptcha.verify(capRes, ip);
 	} else {
 		logObj.status = 400;
 		logObj.err = {item: 'email', msg: 'Invalid request' };
 		logObj.username = username;
 		logObj.email = email;
-		log.warn('controller.user.create', logObj);
+		logObj.reason = 'Captcha verification failed';
+		log.error('controller.user.create', logObj);
 		return controller.fail(res, new Error('Invalid request'), 400, json);
 	}
 
-	if (!gcapValid) {
+	if (!capValid) {
 		logObj.status = 400;
-		logObj.err = {item: 'email', msg: 'Google Recaptcha is invalid'};
 		logObj.username = username;
 		logObj.email = email;
-		log.warn('controller.user.create', logObj);
-		return controller.fail(res, new Error('Google Recaptcha is invalid'), 400, json);
+		logObj.reason = 'Captcha is invalid';
+		log.error('controller.user.create', logObj);
+		return controller.fail(res, new Error('Captcha is invalid'), 400, json);
 	}
 
 	try {
@@ -232,15 +262,15 @@ controller.user.create = async function (req : ExpressRequest, res : Response, n
 		logObj.err = err;
 		logObj.username = username;
 		logObj.email = email;
-		log.error(err);
-		log.warn('controller.user.create', logObj);
+		logObj.reason = err.toString();
+		log.error('controller.user.create', logObj);
 		return controller.fail(res, 'Error creating user', 500, json);
 	}
 
 	if (!create || create.error) {
 		logObj.status = 400;
-		logObj.err = {item: 'email', msg: create.error };
-		log.warn('controller.user.create', logObj);
+		logObj.reason = create.error || 'User create failed';
+		log.error('controller.user.create', logObj);
 		return controller.fail(res, 'Error creating user', 400, json);
 	}
 
@@ -252,10 +282,19 @@ controller.user.create = async function (req : ExpressRequest, res : Response, n
 	try {
 		hipcad.mail.send([ email ], subject, body);
 	} catch (err) {
-		log.error(err);
+		let logObj2 : any = {
+			reason : 'Sending mail failed',
+			err : err.toString()
+		};
+		log.error('controller.user.create', logObj2);
 	}
 	
 	if (json) {
+		logObj.status = 200;
+		logObj.email = email;
+		logObj.username = username;
+		logObj.action = 'User created';
+		log.info('controller.user.create', logObj);
 		res.status(200).json({ success: true });
 	} else {
 		res.redirect('/#login');
@@ -532,7 +571,7 @@ controller.object.render = async function (req : ExpressRequest, res : Response,
 	} catch (err) {
 		logObj.status = 500;
 		log.error(err);
-		log.warn('controller.object.render', logObj);
+		log.error('controller.object.render', logObj);
 		return controller.fail(res, 'Server error.', 500, json);
 	}
 
@@ -696,7 +735,7 @@ module.exports = async (pool : any) => {
 	hipcad.objects = await require('../objects')(pool);
 	hipcad.openscad = await require('../openscad')(pool);
 	hipcad.tmpl = require('../templates');
-	hipcad.mail = new Mail();
+	hipcad.mail = new Mail( { log : require('log')('mail') });
 	hipcad.recaptcha = require('../recaptcha');
 
 	return { hipcad, controller };
