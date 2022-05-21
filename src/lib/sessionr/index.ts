@@ -33,8 +33,8 @@ const RedisStore = require('connect-redis')(session)
  	//for heroku
  	if (REDIS_URL) {
  		AUTH = parse(REDIS_URL);
- 		REDIS_OPTS.user = AUTH[0];
-    	REDIS_OPTS.password = AUTH[1];
+ 		//REDIS_OPTS.user = AUTH[0];
+    	//REDIS_OPTS.password = AUTH[1];
     	REDIS_OPTS.host = AUTH.hostname;
     	REDIS_OPTS.port = AUTH.port;
  	} else {
@@ -60,12 +60,14 @@ const RedisStore = require('connect-redis')(session)
 			maxAge: 		12 * 30 * 24 * 3600000 //year
 		}
 	}
-
+	console.log(REDIS_OPTS)
 	const redisClient = redis.createClient(REDIS_OPTS)
 
 	redisClient.on('error', (err : Error) => {
 		console.error('auth/session ' + JSON.stringify(err))
 	})
+
+	redisClient.connect()
 
 	SESSION_OPTS.store = new RedisStore({ client: redisClient })
 
