@@ -14,9 +14,16 @@ const log = require('log')('server');
 
 const app = express();
 
+const DEBUG : boolean = platform().indexOf('darwin') !== -1 
+	|| process.argv.indexOf('-d') !== -1 
+	|| process.argv.indexOf('--dev') !== -1
+	|| (typeof process.env.DEBUG !== 'undefined' && process.env.DEBUG === 'true');
+
 log.info('Starting hipcad...');
 
-app.use(helmet());
+if (!DEBUG) {
+	app.use(helmet());
+}
 
 app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(session);
@@ -24,11 +31,8 @@ app.use(session);
 app.use(bodyParser.json({limit : '5mb'}));
 app.use(bodyParser.urlencoded({limit : '5mb', extended: false}));
 
-if (platform().indexOf('darwin') !== -1 
-	|| process.argv.indexOf('-d') !== -1 
-	|| process.argv.indexOf('--dev') !== -1
-	|| (typeof process.env.DEBUG !== 'undefined' && process.env.DEBUG === 'true') ) {
-	log.info('Serving /static from node process on OSX');
+if ( DEBUG ) {
+	log.info('Serving /static from node process');
 	log.info(resolve(join(__dirname + '/../static')));
 	app.use('/static', express.static( resolve(join(__dirname + '/../static')) )); //for local dev
 }

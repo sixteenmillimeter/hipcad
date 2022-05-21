@@ -12,20 +12,23 @@ const body_parser_1 = __importDefault(require("body-parser"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const session = require('sessionr');
 const log = require('log')('server');
-const app = express_1.default();
+const app = (0, express_1.default)();
+const DEBUG = (0, os_1.platform)().indexOf('darwin') !== -1
+    || process.argv.indexOf('-d') !== -1
+    || process.argv.indexOf('--dev') !== -1
+    || (typeof process.env.DEBUG !== 'undefined' && process.env.DEBUG === 'true');
 log.info('Starting hipcad...');
-app.use(helmet_1.default());
-app.use(cookie_parser_1.default(process.env.COOKIE_SECRET));
+if (!DEBUG) {
+    app.use((0, helmet_1.default)());
+}
+app.use((0, cookie_parser_1.default)(process.env.COOKIE_SECRET));
 app.use(session);
 app.use(body_parser_1.default.json({ limit: '5mb' }));
 app.use(body_parser_1.default.urlencoded({ limit: '5mb', extended: false }));
-if (os_1.platform().indexOf('darwin') !== -1
-    || process.argv.indexOf('-d') !== -1
-    || process.argv.indexOf('--dev') !== -1
-    || (typeof process.env.DEBUG !== 'undefined' && process.env.DEBUG === 'true')) {
-    log.info('Serving /static from node process on OSX');
-    log.info(path_1.resolve(path_1.join(__dirname + '/../static')));
-    app.use('/static', express_1.default.static(path_1.resolve(path_1.join(__dirname + '/../static')))); //for local dev
+if (DEBUG) {
+    log.info('Serving /static from node process');
+    log.info((0, path_1.resolve)((0, path_1.join)(__dirname + '/../static')));
+    app.use('/static', express_1.default.static((0, path_1.resolve)((0, path_1.join)(__dirname + '/../static')))); //for local dev
 }
 app.get('/robots.txt', function (req, res, next) {
     'use strict';
@@ -59,7 +62,7 @@ module.exports = async function (pool) {
         hipcad.dev = false;
     }
     try {
-        hipcad.homePage = await fs_extra_1.readFile('./views/info.txt', 'utf8');
+        hipcad.homePage = await (0, fs_extra_1.readFile)('./views/info.txt', 'utf8');
     }
     catch (err) {
         log.error(err);
