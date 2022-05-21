@@ -1,6 +1,7 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
-const log = require('log')('mail');
+/** @module mail */
+/** Mail module for Sparkpost, SES and nodemailer... */
 /** Class representing a federated email client for use with SaaS providers */
 class Mail {
     /**
@@ -16,6 +17,14 @@ class Mail {
      * @param  {Object} options Configuration options
      */
     constructor(options = {}) {
+        this.log = {
+            info: (args) => { this.log.log(...args); },
+            warn: (args) => { this.log.warn(...args); },
+            error: (args) => { this.log.error(...args); }
+        };
+        if (options.log) {
+            this.log = options.log;
+        }
         if (typeof process.env.SPARKPOST_API_KEY !== 'undefined') {
             this.SparkPost = require('sparkpost');
             this._client = this._sparkpostInit(options);
@@ -33,7 +42,7 @@ class Mail {
             this._client = this._sesInit(options);
         }
         else {
-            log.error(new Error('No email provider defined'));
+            this.log.error(new Error('No email provider defined').toString());
         }
     }
     /**
@@ -178,8 +187,9 @@ class Mail {
             API_KEY = process.env.SPARKPOST_API_KEY;
         }
         else {
-            return log.error(new Error('No SPARKPOST_API_KEY found'));
+            return this.log.error(new Error('No SPARKPOST_API_KEY found').toString());
         }
+        this.log.info(`Using mail provider SparkPost`);
         return new this.SparkPost(API_KEY);
     }
     /**
@@ -242,7 +252,7 @@ class Mail {
             config.accessKeyId = process.env.SES_ACCESS_KEY_ID;
         }
         else {
-            return log.error(new Error('No accessKeyId defined for SES process'));
+            return this.log.error(new Error('No accessKeyId defined for SES process').toString());
         }
         if (typeof options.SES_SECRET_ACCESS_KEY !== 'undefined') {
             config.secretAccessKey = options.SES_SECRET_ACCESS_KEY;
@@ -251,7 +261,7 @@ class Mail {
             config.secretAccessKey = process.env.SES_SECRET_ACCESS_KEY;
         }
         else {
-            return log.error(new Error('No secretAccessKey defined for SES process'));
+            return this.log.error(new Error('No secretAccessKey defined for SES process').toString());
         }
         if (typeof options.SES_REGION !== 'undefined') {
             config.region = options.SES_REGION;
@@ -261,10 +271,11 @@ class Mail {
         }
         else {
             //config.region = 'us-east-1' //default to US East 1
-            return log.error(new Error('No region defined for SES process'));
+            return this.log.error(new Error('No region defined for SES process').toString());
         }
         config.apiVersion = '2010-12-01';
         this.aws.config.update(config);
+        this.log.info(`Using mail provider Amazon SES`);
         return new this.aws.SES();
     }
     /**
@@ -325,7 +336,7 @@ class Mail {
             config.auth.user = process.env.GMAIL_USER;
         }
         else {
-            return log.error(new Error('No GMAIL_USER found'));
+            return this.log.error(new Error('No GMAIL_USER found').toString());
         }
         if (typeof options.GMAIL_PASSWORD !== 'undefined') {
             config.auth.pass = options.GMAIL_PASSWORD;
@@ -334,8 +345,9 @@ class Mail {
             config.auth.pass = process.env.GMAIL_PASSWORD;
         }
         else {
-            return log.error(new Error('No GMAIL_PASSWORD found'));
+            return this.log.error(new Error('No GMAIL_PASSWORD found').toString());
         }
+        this.log.info(`Using mail provider Gmail (nodemailer)`);
         return this.nodemailer.createTransport(config);
     }
     /**
@@ -387,7 +399,7 @@ class Mail {
             config.auth.user = process.env.SMTP_USER;
         }
         else {
-            return log.error(new Error('No SMTP_USER found'));
+            return this.log.error(new Error('No SMTP_USER found').toString());
         }
         if (typeof options.SMTP_PASSWORD !== 'undefined') {
             config.auth.pass = options.SMTP_PASSWORD;
@@ -396,7 +408,7 @@ class Mail {
             config.auth.pass = process.env.SMTP_PASSWORD;
         }
         else {
-            return log.error(new Error('No SMTP_PASSWORD found'));
+            return this.log.error(new Error('No SMTP_PASSWORD found').toString());
         }
         if (typeof options.SMTP_HOST !== 'undefined') {
             config.host = options.SMTP_HOST;
@@ -405,7 +417,7 @@ class Mail {
             config.host = process.env.SMTP_HOST;
         }
         else {
-            return log.error(new Error('No SMTP_HOST found'));
+            return this.log.error(new Error('No SMTP_HOST found').toString());
         }
         if (typeof options.SMTP_PORT !== 'undefined') {
             config.port = options.SMTP_PORT;
@@ -416,6 +428,7 @@ class Mail {
         if (config.port === 465) {
             config.secure = true;
         }
+        this.log.info(`Using mail provider SMTP @ ${config.host}`);
         return this.nodemailer.createTransport(config);
     }
     _smtpConfig(to, subject, body, from) {
@@ -426,8 +439,6 @@ class Mail {
             html: body
         };
         return config;
-    }
-    log() {
     }
 }
 exports.default = Mail;
