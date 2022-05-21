@@ -1,5 +1,5 @@
 'use strict';
-
+import 'dotenv/config'
 import cluster from 'cluster';
 import { cpus } from 'os';
 

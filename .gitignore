@@ -6,3 +6,4 @@ lib/cfg.js
 run_*.sh
 process.json
 *.DS_Store
+.env
