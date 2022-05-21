@@ -17,10 +17,15 @@ let winstonPapertrail;
 * @returns {object} Winston logger
 */
 function createLog(label, filename = null) {
-    const transports = [new (winston.transports.Console)({ label: label })];
+    const transports = [
+        new (winston.transports.Console)({ label, timestamp: true })
+    ];
+    const format = winston.format.combine(winston.format.label({ label }), winston.format.timestamp({
+        format: 'YYYY-MM-DD HH:mm:ss.SSS'
+    }), winston.format.json());
     let papertrailOpts;
     if (filename !== null) {
-        transports.push(new (winston.transports.File)({ label: label, filename: filename }));
+        transports.push(new (winston.transports.File)({ label, filename, timestamp: true }));
     }
     if (PAPERTRAIL_HOST && PAPERTRAIL_PORT) {
         require('winston-papertrail').Papertrail;
@@ -41,8 +46,10 @@ function createLog(label, filename = null) {
         });
         transports.push(winstonPapertrail);
     }
-    return new (winston.Logger)({
-        transports: transports
+    return winston.createLogger({
+        format,
+        transports
     });
 }
 module.exports = createLog;
+//# sourceMappingURL=index.js.map

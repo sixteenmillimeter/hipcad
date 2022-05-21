@@ -8,7 +8,7 @@ let objectsDB;
 const objects = {};
 objects.hash = function objects_hash(str) {
     //
-    return crypto_1.createHash('sha256').update(str).digest('base64');
+    return (0, crypto_1.createHash)('sha256').update(str).digest('base64');
 };
 /**
  * Check whether object exists, using username and object id
@@ -33,7 +33,7 @@ objects.create = async function objects_create(user, object, source) {
     const pathStr = `${user.username.toLowerCase()}/${object.toLowerCase()}`;
     const pathHash = objects.hash(pathStr);
     const doc = {
-        id: uuid_1.v4(),
+        id: (0, uuid_1.v4)(),
         username: user.username,
         userid: user.id,
         path: pathStr,
