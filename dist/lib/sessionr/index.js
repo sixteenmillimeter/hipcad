@@ -29,7 +29,7 @@ function sessionr() {
     let AUTH;
     //for heroku
     if (REDIS_URL) {
-        AUTH = url_1.parse(REDIS_URL);
+        AUTH = (0, url_1.parse)(REDIS_URL);
         REDIS_OPTS.user = AUTH[0];
         REDIS_OPTS.password = AUTH[1];
         REDIS_OPTS.host = AUTH.hostname;

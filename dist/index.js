@@ -3,13 +3,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+require("dotenv/config");
 const cluster_1 = __importDefault(require("cluster"));
 const os_1 = require("os");
 const pool = require('dbpool');
 const debug = require('debug')('app');
 const log = require('log')('app');
 const NUM_CPU = typeof process.env.WORKERS !== 'undefined' ?
-    parseInt(process.env.WORKERS) : os_1.cpus().length;
+    parseInt(process.env.WORKERS) : (0, os_1.cpus)().length;
 const PORT = typeof process.env.PORT !== 'undefined' ?
     parseInt(process.env.PORT) : 3022;
 let app;

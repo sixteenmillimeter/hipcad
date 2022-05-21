@@ -196,7 +196,6 @@ controller.user.create = async function (req, res, next) {
         logObj.status = 400;
         logObj.reason = 'Form is invalid';
         log.error('controller.user.create', logObj);
-        console.log(JSON.stringify(req.body));
         return controller.fail(res, 'Invalid request', 400, json);
     }
     if (valid) {

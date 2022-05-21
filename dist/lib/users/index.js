@@ -45,7 +45,7 @@ users.exists = async function users_exists(username) {
 users.prohibit = ['static', 'user', 'object', 'hipcad', 'twittercb'];
 users.create = async function users_create(username, email, pwstring, pwstring2) {
     const userobj = {
-        id: uuid_1.v4(),
+        id: (0, uuid_1.v4)(),
         username,
         email,
         joined: new Date().getTime(),
@@ -104,7 +104,7 @@ users.auth = async function users_auth(username, pwstring) {
         return { error: `User not found` };
     }
     try {
-        matched = await bcrypt_1.compare(pwstring, userobj.passwordhash);
+        matched = await (0, bcrypt_1.compare)(pwstring, userobj.passwordhash);
     }
     catch (err) {
         log.error(err);
@@ -118,11 +118,11 @@ users.auth = async function users_auth(username, pwstring) {
 };
 users.hash = function users_hash(str) {
     //
-    return crypto_1.createHash('sha256').update(str).digest('base64');
+    return (0, crypto_1.createHash)('sha256').update(str).digest('base64');
 };
 users.hashpw = async function users_hashpw(value) {
     //
-    return bcrypt_1.hash(value, 10);
+    return (0, bcrypt_1.hash)(value, 10);
 };
 users.destroy = async function users_destroy(username, pwstring) {
     let userobj;
@@ -138,7 +138,7 @@ users.destroy = async function users_destroy(username, pwstring) {
         return { error: `User not found` };
     }
     try {
-        matched = await bcrypt_1.compare(pwstring, userobj.passwordhash);
+        matched = await (0, bcrypt_1.compare)(pwstring, userobj.passwordhash);
     }
     catch (err) {
         log.error(err);
@@ -189,16 +189,16 @@ users.validateInfo = function users_validateInfo(username, email, pwstring, pwst
     if (users.prohibit.indexOf(username) !== -1) {
         return 'Username unavailable.';
     }
-    if (!isLength_1.default(username, { min: 1, max: 256 })) {
+    if (!(0, isLength_1.default)(username, { min: 1, max: 256 })) {
         return 'Username too long.';
     }
-    if (!isEmail_1.default(email)) {
+    if (!(0, isEmail_1.default)(email)) {
         return 'Email is invalid.';
     }
     if (pwstring !== pwstring2) {
         return 'Passwords do not match.';
     }
-    if (!isLength_1.default(pwstring, { min: 8, max: 256 })) {
+    if (!(0, isLength_1.default)(pwstring, { min: 8, max: 256 })) {
         return 'Passwords is too short. Minimum length is 8 characters.';
     }
     return null;

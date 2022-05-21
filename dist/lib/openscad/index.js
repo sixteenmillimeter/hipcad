@@ -9,10 +9,10 @@ const child_process_1 = require("child_process");
 const os_1 = require("os");
 const path_1 = require("path");
 let log = require('log')('openscad');
-const tmpDir = path_1.join(os_1.tmpdir(), '/hipcad/');
+const tmpDir = (0, path_1.join)((0, os_1.tmpdir)(), '/hipcad/');
 async function render(scad) {
     const bin = `openscad`;
-    const output = path_1.join(tmpDir, scad.replace('.scad', '.stl'));
+    const output = (0, path_1.join)(tmpDir, scad.replace('.scad', '.stl'));
     const args = [
         '-o', output,
         scad
@@ -20,7 +20,7 @@ async function render(scad) {
     let stdout = '';
     let stderr = '';
     return new Promise((resolve, reject) => {
-        const child = child_process_1.spawn(bin, args);
+        const child = (0, child_process_1.spawn)(bin, args);
         child.stderr.on('data', (data) => {
             const line = data.toString();
             stderr += line;
@@ -55,9 +55,9 @@ openscad.render = async function (scad) {
 openscad.toFile = async function (id, text) {
     const now = new Date().getTime();
     const fileName = now + '_' + id + '.scad';
-    const filePath = path_1.join(tmpDir, fileName);
+    const filePath = (0, path_1.join)(tmpDir, fileName);
     try {
-        await fs_extra_1.writeFile(filePath, text, 'utf8');
+        await (0, fs_extra_1.writeFile)(filePath, text, 'utf8');
     }
     catch (err) {
         log.error(err);
@@ -67,8 +67,8 @@ openscad.toFile = async function (id, text) {
 };
 openscad.cleanTmp = async function (scad, stl) {
     try {
-        await fs_extra_1.unlink(scad);
-        await fs_extra_1.unlink(stl);
+        await (0, fs_extra_1.unlink)(scad);
+        await (0, fs_extra_1.unlink)(stl);
         log.info(`Removed ${scad} and ${stl}`);
     }
     catch (err) {
@@ -89,7 +89,7 @@ openscad.service = async function openscad_service(username, object, source) {
     let body;
     let res;
     try {
-        res = await request_promise_1.default(query);
+        res = await (0, request_promise_1.default)(query);
     }
     catch (err) {
         log.error(err);
@@ -112,7 +112,7 @@ openscad.progress = async function openscad_process(id) {
     let res;
     let status;
     try {
-        res = await request_promise_1.default(query);
+        res = await (0, request_promise_1.default)(query);
     }
     catch (err) {
         log.error(err);

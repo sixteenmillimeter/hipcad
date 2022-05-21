@@ -14,7 +14,6 @@ apt-get install apache2-utils -y
 apt-get install jq -y
 apt-get install couchdb redis-server -y
 
-ln -s /usr/bin/nodejs /usr/bin/node
 mkdir /var/node
 mkdir /var/log/hipcad
 mkdir /var/cfg
@@ -22,7 +21,6 @@ mkdir /var/cfg/hipcad.com
 mkdir /tmp/hipcad
 
 cd /var/node
-git clone https://litter@bitbucket.org/litter/hipcad.git
+git clone https://git.sixteenmillimeter.com/mattmcw/hipcad.git
 cd hipcad
-npm install -g pm2 gulp
 npm install
