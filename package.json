@@ -35,6 +35,7 @@
     "helmet": "^5.1.0",
     "lodash": "^4.17.21",
     "log": "file:dist/lib/log",
+    "mail": "file:dist/lib/mail",
     "mandrill-api": "^1.0.45",
     "moment": "^2.29.3",
     "nano": "^10.0.0",
