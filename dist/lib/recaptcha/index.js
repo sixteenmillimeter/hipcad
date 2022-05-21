@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const request_promise_1 = __importDefault(require("request-promise"));
 const recaptcha = {};
-const url = 'https://www.google.com/recaptcha/api/siteverify';
+const url = 'https://hcaptcha.com/siteverify';
 let privateKey = process.env.RECAPTCHA_PRIVATE_KEY;
 recaptcha.verify = async function (response, ip) {
     const postObj = {
@@ -20,7 +20,7 @@ recaptcha.verify = async function (response, ip) {
     let res;
     let body;
     try {
-        res = await request_promise_1.default(postObj);
+        res = await (0, request_promise_1.default)(postObj);
     }
     catch (err) {
         throw err;

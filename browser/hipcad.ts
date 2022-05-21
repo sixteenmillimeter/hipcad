@@ -1,6 +1,8 @@
 'use strict';
 
-var pageData : any;
+if (typeof pageData === 'undefined') {
+	var pageData : any = {};
+}
 
 //@ts-ignore
 OpenJsCad.AlertUserOfUncaughtExceptions();
@@ -30,7 +32,7 @@ function onready () {
 		gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]
 	};
 
-	if (typeof pageData.session !== 'undefined' && pageData.session === true) {
+	if (typeof pageData !== 'undefined' && typeof pageData.session !== 'undefined' && pageData.session === true) {
 		$('.menu li').removeAttr('disabled');
 		$('#menuUserAction').attr('onclick', 'logout();').text('Logout');
 	}
@@ -38,7 +40,8 @@ function onready () {
 	//@ts-ignore
 	txt.height = window.innerHeight;
 	
-	if (typeof pageData.type !== 'undefined'
+	if (typeof pageData !== 'undefined'
+		&& typeof pageData.type !== 'undefined'
 		&& (pageData.type === 'object'
 		|| pageData.type === 'user')
 	) {
@@ -443,6 +446,14 @@ function signup () {
 	if (pageData.recaptcha){
 		recaptcha = decodeURIComponent(pageData.recaptcha);
 	}
+	setTimeout(function () {
+		const options : any = {
+			//@ts-ignore
+			sitekey: RECAPTCHA_SITE_KEY
+		};
+		//@ts-ignore
+		hcaptcha.render('signup-hcaptcha', options);
+	}, 100);
 	bootbox.dialog({
             title: "Create an account",
             message:
@@ -454,9 +465,7 @@ function signup () {
                 				'<input id="signupUser" name="signupUser" type="text" placeholder="Username" class="form-control input-md" style="margin-bottom: 20px;"> ' +
                 				'<input id="signupPwstring" name="pwstring" type="password" placeholder="Password" class="form-control input-md" style="margin-bottom: 20px;"> ' +
                 				'<input id="signupPwstring2" name="signupPwstring2" type="password" placeholder="Password again" class="form-control input-md" style="margin-bottom: 20px;"> ' +
-                				'<script src="https://www.google.com/recaptcha/api.js"></script>' +
-                				//@ts-ignore
-                				'<div class="g-recaptcha" data-sitekey="' + RECAPTCHA_SITE_KEY + '"></div>' +
+                				'<div id="signup-hcaptcha"></div>' +
                 				'<div id="loginLink">Already have an account? <a href="#login">Login</a>' +
                 			'</div> ' +
                 		'</form> </div> </div>',

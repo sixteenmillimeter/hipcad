@@ -1,5 +1,7 @@
 'use strict';
-var pageData;
+if (typeof pageData === 'undefined') {
+    var pageData = {};
+}
 //@ts-ignore
 OpenJsCad.AlertUserOfUncaughtExceptions();
 const version = '0.3.0 (2020/03/21)';
@@ -24,13 +26,14 @@ function onready() {
         foldGutter: true,
         gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]
     };
-    if (typeof pageData.session !== 'undefined' && pageData.session === true) {
+    if (typeof pageData !== 'undefined' && typeof pageData.session !== 'undefined' && pageData.session === true) {
         $('.menu li').removeAttr('disabled');
         $('#menuUserAction').attr('onclick', 'logout();').text('Logout');
     }
     //@ts-ignore
     txt.height = window.innerHeight;
-    if (typeof pageData.type !== 'undefined'
+    if (typeof pageData !== 'undefined'
+        && typeof pageData.type !== 'undefined'
         && (pageData.type === 'object'
             || pageData.type === 'user')) {
         cfg.readOnly = true;
@@ -413,6 +416,14 @@ function signup() {
     if (pageData.recaptcha) {
         recaptcha = decodeURIComponent(pageData.recaptcha);
     }
+    setTimeout(function () {
+        const options = {
+            //@ts-ignore
+            sitekey: RECAPTCHA_SITE_KEY
+        };
+        //@ts-ignore
+        hcaptcha.render('signup-hcaptcha', options);
+    }, 100);
     bootbox.dialog({
         title: "Create an account",
         message: '<div class="row">  ' +
@@ -423,9 +434,7 @@ function signup() {
             '<input id="signupUser" name="signupUser" type="text" placeholder="Username" class="form-control input-md" style="margin-bottom: 20px;"> ' +
             '<input id="signupPwstring" name="pwstring" type="password" placeholder="Password" class="form-control input-md" style="margin-bottom: 20px;"> ' +
             '<input id="signupPwstring2" name="signupPwstring2" type="password" placeholder="Password again" class="form-control input-md" style="margin-bottom: 20px;"> ' +
-            '<script src="https://www.google.com/recaptcha/api.js"></script>' +
-            //@ts-ignore
-            '<div class="g-recaptcha" data-sitekey="' + RECAPTCHA_SITE_KEY + '"></div>' +
+            '<div id="signup-hcaptcha"></div>' +
             '<div id="loginLink">Already have an account? <a href="#login">Login</a>' +
             '</div> ' +
             '</form> </div> </div>',

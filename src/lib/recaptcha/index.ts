@@ -3,7 +3,7 @@
 import request from 'request-promise';
 
 const recaptcha : any = {};
-const url : string = 'https://www.google.com/recaptcha/api/siteverify';
+const url : string = 'https://hcaptcha.com/siteverify';
 let privateKey : string = process.env.RECAPTCHA_PRIVATE_KEY;
 
 recaptcha.verify = async function (response : string, ip : string) {
