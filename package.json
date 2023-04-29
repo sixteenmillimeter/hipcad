@@ -37,7 +37,7 @@
     "log": "file:dist/lib/log",
     "mail": "file:dist/lib/mail",
     "mandrill-api": "^1.0.45",
-    "moment": "^2.29.3",
+    "moment": "^2.29.4",
     "nano": "^10.0.0",
     "nodemailer": "^6.7.5",
     "pg": "^8.7.3",
